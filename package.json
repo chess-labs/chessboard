@@ -1,0 +1,31 @@
+{
+  "name": "chessboard",
+  "version": "1.0.0",
+  "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
+  "main": "src/index.js",
+  "types": "src/types.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:ui": "vitest --ui",
+    "prepare": "npm run build"
+  },
+  "keywords": [
+    "chess",
+    "typescript",
+    "engine",
+    "board-game"
+  ],
+  "author": "chess-labs",
+  "license": "ISC",
+  "packageManager": "pnpm@10.8.1",
+  "devDependencies": {
+    "typescript": "^5.4.5",
+    "vitest": "^3.1.3"
+  }
+}
