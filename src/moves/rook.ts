@@ -30,10 +30,16 @@ export const getRookMoves = (position: Position, gameState: GameState): Move[] =
 /**
  * Get all moves in a specific direction
  */
-const getMovesInDirection = (position: Position, dx: number, dy: number, pieceColor: Color, board: Board): Move[] => {
+const getMovesInDirection = (
+  position: Position,
+  deltaX: number,
+  deltaY: number,
+  pieceColor: Color,
+  board: Board
+): Move[] => {
   const moves: Move[] = [];
-  let currentX = position.x + dx;
-  let currentY = position.y + dy;
+  let currentX = position.x + deltaX;
+  let currentY = position.y + deltaY;
 
   while (true) {
     // Check if position is valid (within board)
@@ -70,7 +76,17 @@ const getMovesInDirection = (position: Position, dx: number, dy: number, pieceCo
 };
 
 /**
- * Check if a rook move is valid
+ * Determines whether a rook move is valid based on chess rules.
+ *
+ * A valid rook move must:
+ * - Be either horizontal or vertical (not diagonal).
+ * - Have a clear path between the starting and ending positions.
+ * - End on an empty square or capture an opponent's piece.
+ *
+ * @param {Position} from - The starting position of the rook.
+ * @param {Position} to - The target position of the rook.
+ * @param {GameState} gameState - The current state of the game, including the board and pieces.
+ * @returns {boolean} True if the move is valid, false otherwise.
  */
 export const isValidRookMove = (from: Position, to: Position, gameState: GameState): boolean => {
   const { board } = gameState;
