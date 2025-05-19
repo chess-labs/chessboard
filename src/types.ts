@@ -45,13 +45,19 @@ export interface Piece {
 export type Board = Array<Array<Piece | null>>;
 
 /**
+ * Type for special chess moves
+ */
+export type SpecialMove = 'castling' | 'en-passant' | 'promotion' | 'two-square-advance';
+
+/**
  * Type representing a possible move
  */
 export interface Move {
   from: Position;
   to: Position;
   capture?: boolean; // Whether this move captures an opponent's piece
-  special?: 'castling' | 'en-passant' | 'promotion'; // Special move type
+  special?: SpecialMove; // Special move type
+  capturedPiecePosition?: Position; // Position of the captured piece (used for en-passant)
 }
 
 /**
@@ -65,7 +71,7 @@ export interface GameState {
     to: Position;
     piece: Piece;
     captured?: Piece;
-    special?: 'castling' | 'en-passant' | 'promotion';
+    special?: SpecialMove;
   }>;
   isCheck: boolean;
   isCheckmate: boolean;
