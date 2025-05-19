@@ -1,4 +1,4 @@
-# ♟️ TypeScript Chess Engine
+# ♟️ TypeScript Chess Board
 
 A lightweight, framework-agnostic chess engine written entirely in **TypeScript**.  
 Designed to be easily integrated with modern UI frameworks like **React**, **Vue**, **Solid**, or even run in **Node.js** environments.
