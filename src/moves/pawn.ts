@@ -46,11 +46,11 @@ const getForwardMoves = (position: Position, direction: number, startingRank: nu
     // Check two squares forward from starting position
     if (position.y === startingRank) {
       const twoSquaresForward: Position = { x: position.x, y: position.y + direction * 2 };
-      if (!getPieceAt(twoSquaresForward, board)) {
+      if (isValidPosition(twoSquaresForward) && !getPieceAt(twoSquaresForward, board)) {
         moves.push({
           from: position,
           to: twoSquaresForward,
-          special: 'two-square-advance' as const,
+          special: 'two-square-advance',
         });
       }
     }
