@@ -1,5 +1,13 @@
 import { describe, it, expect } from 'vitest';
-import { initBoard, isValidPosition, getPieceAt, isPathClear, algebraicToPosition, positionToAlgebraic } from './board';
+import {
+  initBoard,
+  isValidPosition,
+  getPieceAt,
+  isPathClear,
+  algebraicToPosition,
+  positionToAlgebraic,
+  cloneBoard,
+} from './board';
 import { Color, PieceType } from './types';
 
 describe('Board functions', () => {
@@ -201,6 +209,43 @@ describe('Board functions', () => {
         const position = algebraicToPosition(notation);
         const converted = positionToAlgebraic(position);
         expect(converted).toBe(notation);
+      }
+    });
+  });
+
+  describe('cloneBoard', () => {
+    it('should create a deep copy of the board', () => {
+      const board = initBoard();
+      const clonedBoard = cloneBoard(board);
+
+      // Check that the structure is the same
+      expect(clonedBoard.length).toBe(board.length);
+      expect(clonedBoard[0].length).toBe(board[0].length);
+
+      // Check that the pieces are the same
+      for (let y = 0; y < 8; y++) {
+        for (let x = 0; x < 8; x++) {
+          if (board[y][x]) {
+            expect(clonedBoard[y][x]).toEqual(board[y][x]);
+          } else {
+            expect(clonedBoard[y][x]).toBeNull();
+          }
+        }
+      }
+
+      // Modify the original board and ensure the clone is not affected
+      const position = { y: 1, x: 0 }; // A black pawn
+      const originalPiece = board[position.y][position.x];
+      expect(originalPiece).not.toBeNull();
+
+      if (originalPiece) {
+        // Change color instead of hasMoved
+        originalPiece.color = Color.WHITE;
+
+        // The cloned piece should not have changed
+        const clonedPiece = clonedBoard[position.y][position.x];
+        expect(clonedPiece).not.toBeNull();
+        expect(clonedPiece?.color).toBe(Color.BLACK);
       }
     });
   });

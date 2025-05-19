@@ -11,15 +11,15 @@ export const initBoard = (): Board => {
 
   // Place pawns
   for (let i = 0; i < 8; i++) {
-    board[1][i] = { type: PieceType.PAWN, color: Color.BLACK, hasMoved: false };
-    board[6][i] = { type: PieceType.PAWN, color: Color.WHITE, hasMoved: false };
+    board[1][i] = { type: PieceType.PAWN, color: Color.BLACK };
+    board[6][i] = { type: PieceType.PAWN, color: Color.WHITE };
   }
 
   // Place rooks
-  board[0][0] = { type: PieceType.ROOK, color: Color.BLACK, hasMoved: false };
-  board[0][7] = { type: PieceType.ROOK, color: Color.BLACK, hasMoved: false };
-  board[7][0] = { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false };
-  board[7][7] = { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false };
+  board[0][0] = { type: PieceType.ROOK, color: Color.BLACK };
+  board[0][7] = { type: PieceType.ROOK, color: Color.BLACK };
+  board[7][0] = { type: PieceType.ROOK, color: Color.WHITE };
+  board[7][7] = { type: PieceType.ROOK, color: Color.WHITE };
 
   // Place knights
   board[0][1] = { type: PieceType.KNIGHT, color: Color.BLACK };
@@ -73,6 +73,14 @@ export const isPathClear = (from: Position, to: Position, board: Board): boolean
 
   if (dx === 0 && dy === 0) return true; // Same position
 
+  // Validate that the path is straight (horizontal, vertical, or diagonal)
+  const xDiff = Math.abs(to.x - from.x);
+  const yDiff = Math.abs(to.y - from.y);
+  const isStraightPath = dx === 0 || dy === 0 || xDiff === yDiff;
+  if (!isStraightPath) {
+    throw new Error('Path must be straight (horizontal, vertical, or diagonal)');
+  }
+
   let x = from.x + dx;
   let y = from.y + dy;
 
@@ -100,6 +108,14 @@ export const algebraicToPosition = (algebraic: string): Position => {
   const rank = 8 - Number.parseInt(algebraic[1], 10);
 
   return { x: file, y: rank };
+};
+
+/**
+ * Clone a chess board deeply to avoid reference issues.
+ * This creates a completely new copy of the board with all pieces.
+ */
+export const cloneBoard = (board: Board): Board => {
+  return board.map((row) => row.map((piece) => (piece ? { ...piece } : null)));
 };
 
 /**
