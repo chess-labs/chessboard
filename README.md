@@ -21,7 +21,7 @@ Designed to be easily integrated with modern UI frameworks like **React**, **Vue
 Once published to npm:
 
 ```bash
-npm install ts-chess-engine
+npm install ...
 ```
 
 ---
