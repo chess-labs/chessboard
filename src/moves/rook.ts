@@ -1,6 +1,7 @@
 import type { Board, GameState, Move, Position } from '../types';
 import { Color, PieceType } from '../types';
 import { getPieceAt, isPathClear, isValidPosition } from '../board';
+import { getMovesInDirection } from '../util';
 
 /**
  * Get all possible moves for a rook at the given position
@@ -22,48 +23,6 @@ export const getRookMoves = (position: Position, gameState: GameState): Move[] =
 
   for (const direction of directions) {
     moves.push(...getMovesInDirection(position, direction.dx, direction.dy, piece.color, board));
-  }
-
-  return moves;
-};
-
-/**
- * Get all moves in a specific direction
- */
-const getMovesInDirection = (position: Position, dx: number, dy: number, pieceColor: Color, board: Board): Move[] => {
-  const moves: Move[] = [];
-  let currentX = position.x + dx;
-  let currentY = position.y + dy;
-
-  while (true) {
-    // Check if position is valid (within board)
-    if (!isValidPosition({ x: currentX, y: currentY })) break;
-
-    const targetPosition: Position = { x: currentX, y: currentY };
-    const targetPiece = getPieceAt(targetPosition, board);
-
-    if (targetPiece === null) {
-      // Empty square - can move here
-      moves.push({
-        from: position,
-        to: targetPosition,
-      });
-    } else {
-      // Square has a piece
-      if (targetPiece.color !== pieceColor) {
-        // Opponent's piece - can capture
-        moves.push({
-          from: position,
-          to: targetPosition,
-          capture: true,
-        });
-      }
-      // Either way, can't move further in this direction
-      break;
-    }
-
-    currentX += dx;
-    currentY += dy;
   }
 
   return moves;
