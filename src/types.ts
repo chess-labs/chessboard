@@ -48,7 +48,8 @@ export type Board = Array<Array<Piece | null>>;
  * Type representing a possible move
  */
 export interface Move {
-  position: Position;
+  from: Position;
+  to: Position;
   capture?: boolean; // Whether this move captures an opponent's piece
   special?: 'castling' | 'en-passant' | 'promotion'; // Special move type
 }

@@ -2,10 +2,10 @@
   "name": "chessboard",
   "version": "1.0.0",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
-  "main": "src/index.js",
-  "types": "src/types.ts",
+  "main": "dist/index.js",
+  "types": "dist/types.ts",
   "files": [
-    "src"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",

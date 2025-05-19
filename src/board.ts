@@ -11,15 +11,15 @@ export const initBoard = (): Board => {
 
   // Place pawns
   for (let i = 0; i < 8; i++) {
-    board[1][i] = { type: PieceType.PAWN, color: Color.BLACK };
-    board[6][i] = { type: PieceType.PAWN, color: Color.WHITE };
+    board[1][i] = { type: PieceType.PAWN, color: Color.BLACK, hasMoved: false };
+    board[6][i] = { type: PieceType.PAWN, color: Color.WHITE, hasMoved: false };
   }
 
   // Place rooks
-  board[0][0] = { type: PieceType.ROOK, color: Color.BLACK };
-  board[0][7] = { type: PieceType.ROOK, color: Color.BLACK };
-  board[7][0] = { type: PieceType.ROOK, color: Color.WHITE };
-  board[7][7] = { type: PieceType.ROOK, color: Color.WHITE };
+  board[0][0] = { type: PieceType.ROOK, color: Color.BLACK, hasMoved: false };
+  board[0][7] = { type: PieceType.ROOK, color: Color.BLACK, hasMoved: false };
+  board[7][0] = { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false };
+  board[7][7] = { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false };
 
   // Place knights
   board[0][1] = { type: PieceType.KNIGHT, color: Color.BLACK };
@@ -92,6 +92,10 @@ export const isPathClear = (from: Position, to: Position, board: Board): boolean
  * Convert algebraic notation (e.g., "e4") to coordinates
  */
 export const algebraicToPosition = (algebraic: string): Position => {
+  if (!/^[a-h][1-8]$/.test(algebraic)) {
+    throw new Error('Invalid algebraic notation. Expected format like "e4".');
+  }
+
   const file = algebraic.charCodeAt(0) - 'a'.charCodeAt(0);
   const rank = 8 - Number.parseInt(algebraic[1], 10);
 
@@ -102,6 +106,11 @@ export const algebraicToPosition = (algebraic: string): Position => {
  * Convert coordinates to algebraic notation
  */
 export const positionToAlgebraic = (position: Position): string => {
+  // Validate that the position is within bounds
+  if (!isValidPosition(position)) {
+    throw new Error('Invalid position. Coordinates must be between 0 and 7.');
+  }
+
   const file = String.fromCharCode('a'.charCodeAt(0) + position.x);
   const rank = 8 - position.y;
 

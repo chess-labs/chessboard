@@ -162,6 +162,7 @@ describe('Board functions', () => {
   });
 
   describe('algebraicToPosition', () => {
+    // TODO: Support for uppercase notation (e.g., 'A1', 'H8') needs to be implemented
     it('should convert algebraic notation to position correctly', () => {
       expect(algebraicToPosition('a1')).toEqual({ x: 0, y: 7 });
       expect(algebraicToPosition('h8')).toEqual({ x: 7, y: 0 });
