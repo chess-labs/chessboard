@@ -90,7 +90,7 @@ const getCaptureMoves = (position: Position, direction: number, color: Color, bo
  */
 const getEnPassantMoves = (position: Position, direction: number, color: Color, gameState: GameState): Move[] => {
   const moves: Move[] = [];
-  const { board, moveHistory } = gameState;
+  const { moveHistory } = gameState;
 
   // En passant is only possible if there is a previous move
   if (moveHistory.length === 0) return moves;
