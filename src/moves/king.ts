@@ -124,7 +124,16 @@ export const isValidKingMove = (from: Position, to: Position, gameState: GameSta
   // Check if the king would be in check after the move
   // Create a cloned board to simulate the move
   const clonedBoard = cloneBoard(board);
+
+  // First clear the king's current position
   clearPosition(clonedBoard, from);
+
+  // If there's a piece at the target position (capture scenario), clear it first
+  if (targetSquare && targetSquare.color !== kingColor) {
+    clearPosition(clonedBoard, to);
+  }
+
+  // Place the king at the new position
   placePiece(clonedBoard, to, kingPiece);
 
   // Create a temporary game state with the king moved
@@ -162,6 +171,11 @@ export const canCastle = (kingPosition: Position, rookPosition: Position, gameSt
 
   // King and rook must be of the same color
   if (king.color !== rook.color) {
+    return false;
+  }
+
+  // King and rook must be on the same row for castling
+  if (kingPosition.row !== rookPosition.row) {
     return false;
   }
 
