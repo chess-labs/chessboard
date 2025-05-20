@@ -8,7 +8,7 @@ import {
   getCurrentPlayer,
   getMoveHistory,
 } from './game';
-import { initBoard } from './board';
+import { clearBoard, initBoard, placePiece } from './board';
 import { Color, PieceType, type GameState } from './types';
 
 describe('Game functions', () => {
@@ -277,6 +277,132 @@ describe('Game functions', () => {
           piece: { type: PieceType.PAWN, color: Color.WHITE },
           captured: { type: PieceType.PAWN, color: Color.BLACK },
           special: 'en-passant',
+        });
+      }
+    });
+
+    it('should correctly handle pawn promotion', () => {
+      // Set up a board with a pawn close to promotion
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place a white pawn one step away from promotion
+      placePiece(gameState.board, { col: 4, row: 1 }, { type: PieceType.PAWN, color: Color.WHITE, hasMoved: true });
+      switchTurn(gameState);
+
+      // Move the pawn to the last rank for promotion (e7 to e8)
+      const result = movePiece(
+        { col: 4, row: 1 }, // e7
+        { col: 4, row: 0 }, // e8
+        gameState
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // Original position should be empty
+        expect(result.board[1][4]).toBeNull();
+
+        // New position should have a queen (default promotion piece)
+        expect(result.board[0][4]).toMatchObject({
+          type: PieceType.QUEEN,
+          color: Color.WHITE,
+          hasMoved: true,
+        });
+
+        // Move history should include the promotion
+        expect(result.moveHistory[0]).toMatchObject({
+          from: { col: 4, row: 1 },
+          to: { col: 4, row: 0 },
+          piece: { type: PieceType.PAWN, color: Color.WHITE },
+          special: 'promotion',
+          promotedTo: PieceType.QUEEN,
+        });
+      }
+    });
+
+    it('should correctly handle pawn promotion with capture', () => {
+      // Set up a board with a pawn close to promotion and an enemy piece to capture
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place a white pawn one step away from promotion
+      placePiece(gameState.board, { col: 4, row: 1 }, { type: PieceType.PAWN, color: Color.WHITE, hasMoved: true });
+      switchTurn(gameState);
+
+      // Place a black piece to capture
+      placePiece(gameState.board, { col: 3, row: 0 }, { type: PieceType.ROOK, color: Color.BLACK });
+      switchTurn(gameState);
+
+      // Move the pawn to capture and promote (e7 to d8)
+      const result = movePiece(
+        { col: 4, row: 1 }, // e7
+        { col: 3, row: 0 }, // d8
+        gameState
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // Original position should be empty
+        expect(result.board[1][4]).toBeNull();
+
+        // New position should have a queen (default promotion piece)
+        expect(result.board[0][3]).toMatchObject({
+          type: PieceType.QUEEN,
+          color: Color.WHITE,
+          hasMoved: true,
+        });
+
+        // Move history should include the promotion and capture
+        expect(result.moveHistory[0]).toMatchObject({
+          from: { col: 4, row: 1 },
+          to: { col: 3, row: 0 },
+          piece: { type: PieceType.PAWN, color: Color.WHITE },
+          special: 'promotion',
+          captured: { type: PieceType.ROOK, color: Color.BLACK },
+          promotedTo: PieceType.QUEEN,
+        });
+      }
+    });
+
+    it('should allow custom piece selection for promotion', () => {
+      // Set up a board with a pawn close to promotion
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place a white pawn one step away from promotion
+      placePiece(gameState.board, { col: 4, row: 1 }, { type: PieceType.PAWN, color: Color.WHITE, hasMoved: true });
+      switchTurn(gameState);
+
+      // Move the pawn to the last rank and promote to knight
+      const result = movePiece(
+        { col: 4, row: 1 }, // e7
+        { col: 4, row: 0 }, // e8
+        gameState,
+        PieceType.KNIGHT // Specify promotion to knight
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // New position should have a knight
+        expect(result.board[0][4]).toMatchObject({
+          type: PieceType.KNIGHT,
+          color: Color.WHITE,
+          hasMoved: true,
+        });
+
+        // Move history should include the promotion to knight
+        expect(result.moveHistory[0]).toMatchObject({
+          from: { col: 4, row: 1 },
+          to: { col: 4, row: 0 },
+          piece: { type: PieceType.PAWN, color: Color.WHITE },
+          special: 'promotion',
+          promotedTo: PieceType.KNIGHT,
         });
       }
     });

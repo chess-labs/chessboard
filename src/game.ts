@@ -18,9 +18,15 @@ import { arePositionsEqual } from './helper';
  * @param from - Starting position of the piece
  * @param to - Target position for the piece
  * @param gameState - Current game state
+ * @param promotionType - Optional piece type to promote a pawn to (defaults to Queen)
  * @returns A new game state with the updated board or null if the move is invalid
  */
-export const movePiece = (from: Position, to: Position, gameState: GameState): GameState | null => {
+export const movePiece = (
+  from: Position,
+  to: Position,
+  gameState: GameState,
+  promotionType: PieceType = PieceType.QUEEN
+): GameState | null => {
   // Check if positions are valid
   if (!isValidPosition(from) || !isValidPosition(to)) {
     return null;
@@ -64,10 +70,23 @@ export const movePiece = (from: Position, to: Position, gameState: GameState): G
   newBoard[from.row][from.col] = null;
 
   // Create a copy of the piece with hasMoved set to true
-  const movedPiece: Piece = {
+  let movedPiece: Piece = {
     ...piece,
     hasMoved: true,
   };
+  // Handle special case: Promotion
+  if (validMove.special === 'promotion') {
+    // Validate promotion type (must be ROOK, KNIGHT, BISHOP, or QUEEN)
+    const validPromotionTypes = [PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN];
+    const finalPromotionType = validPromotionTypes.includes(promotionType) ? promotionType : PieceType.QUEEN;
+
+    // Replace the pawn with the desired promotion piece (default is Queen)
+    movedPiece = {
+      color: piece.color,
+      type: finalPromotionType,
+      hasMoved: true,
+    };
+  }
 
   // Place the moved piece at the destination
   placePiece(newBoard, to, movedPiece);
@@ -111,6 +130,7 @@ export const movePiece = (from: Position, to: Position, gameState: GameState): G
     piece: { ...piece },
     special: validMove.special,
     captured: capturedPiece || undefined,
+    promotedTo: validMove.special === 'promotion' ? promotionType : undefined,
   };
 
   // Create a new game state with the updated board

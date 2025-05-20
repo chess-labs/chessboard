@@ -72,6 +72,7 @@ export interface GameState {
     piece: Piece;
     captured?: Piece;
     special?: SpecialMove;
+    promotedTo?: PieceType; // Type of piece that a pawn was promoted to
   }>;
   isCheck: boolean;
   isCheckmate: boolean;
