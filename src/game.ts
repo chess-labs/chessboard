@@ -74,13 +74,16 @@ export const movePiece = (
     ...piece,
     hasMoved: true,
   };
-
   // Handle special case: Promotion
   if (validMove.special === 'promotion') {
+    // Validate promotion type (must be ROOK, KNIGHT, BISHOP, or QUEEN)
+    const validPromotionTypes = [PieceType.ROOK, PieceType.KNIGHT, PieceType.BISHOP, PieceType.QUEEN];
+    const finalPromotionType = validPromotionTypes.includes(promotionType) ? promotionType : PieceType.QUEEN;
+
     // Replace the pawn with the desired promotion piece (default is Queen)
     movedPiece = {
       color: piece.color,
-      type: promotionType,
+      type: finalPromotionType,
       hasMoved: true,
     };
   }
