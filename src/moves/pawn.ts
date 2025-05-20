@@ -13,13 +13,14 @@ export const getPawnMoves = (position: Position, gameState: GameState): Move[] =
   const moves: Move[] = [];
   const direction = piece.color === Color.WHITE ? -1 : 1; // White moves up (-y), Black moves down (+y)
   const startingRank = piece.color === Color.WHITE ? 6 : 1;
+  const promotionRank = piece.color === Color.WHITE ? 0 : 7; // Promotion rank (row 0 for white, row 7 for black)
 
   // Forward moves
-  const forwardMoves = getForwardMoves(position, direction, startingRank, board);
+  const forwardMoves = getForwardMoves(position, direction, startingRank, promotionRank, board);
   moves.push(...forwardMoves);
 
   // Capture moves
-  const captureMoves = getCaptureMoves(position, direction, piece.color, board);
+  const captureMoves = getCaptureMoves(position, direction, piece.color, promotionRank, board);
   moves.push(...captureMoves);
 
   // En passant moves
@@ -32,16 +33,31 @@ export const getPawnMoves = (position: Position, gameState: GameState): Move[] =
 /**
  * Get possible forward moves for a pawn
  */
-const getForwardMoves = (position: Position, direction: number, startingRank: number, board: Board): Move[] => {
+const getForwardMoves = (
+  position: Position,
+  direction: number,
+  startingRank: number,
+  promotionRank: number,
+  board: Board
+): Move[] => {
   const moves: Move[] = [];
   const oneSquareForward: Position = { col: position.col, row: position.row + direction };
 
   // Check one square forward
   if (isValidPosition(oneSquareForward) && !getPieceAt(oneSquareForward, board)) {
-    moves.push({
-      from: position,
-      to: oneSquareForward,
-    });
+    // Check if the move results in promotion
+    if (oneSquareForward.row === promotionRank) {
+      moves.push({
+        from: position,
+        to: oneSquareForward,
+        special: 'promotion',
+      });
+    } else {
+      moves.push({
+        from: position,
+        to: oneSquareForward,
+      });
+    }
 
     // Check two squares forward from starting position
     if (position.row === startingRank) {
@@ -62,7 +78,13 @@ const getForwardMoves = (position: Position, direction: number, startingRank: nu
 /**
  * Get possible capture moves for a pawn
  */
-const getCaptureMoves = (position: Position, direction: number, color: Color, board: Board): Move[] => {
+const getCaptureMoves = (
+  position: Position,
+  direction: number,
+  color: Color,
+  promotionRank: number,
+  board: Board
+): Move[] => {
   const moves: Move[] = [];
   const capturePositions: Position[] = [
     { col: position.col - 1, row: position.row + direction }, // Left capture
@@ -74,11 +96,21 @@ const getCaptureMoves = (position: Position, direction: number, color: Color, bo
 
     const targetPiece = getPieceAt(capturePos, board);
     if (targetPiece && targetPiece.color !== color) {
-      moves.push({
-        from: position,
-        to: capturePos,
-        capture: true,
-      });
+      // Check if the capture results in promotion
+      if (capturePos.row === promotionRank) {
+        moves.push({
+          from: position,
+          to: capturePos,
+          capture: true,
+          special: 'promotion',
+        });
+      } else {
+        moves.push({
+          from: position,
+          to: capturePos,
+          capture: true,
+        });
+      }
     }
   }
 
