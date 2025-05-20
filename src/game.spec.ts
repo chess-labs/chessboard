@@ -204,6 +204,82 @@ describe('Game functions', () => {
       // Original game state should be unchanged
       expect(JSON.stringify(gameState.board)).toBe(originalBoard);
     });
+
+    it('should correctly handle en passant capture', () => {
+      const gameState = createGameState();
+
+      // 1. Move white pawn e2 to e4 (two-square advance)
+      let result = movePiece(
+        { col: 4, row: 6 }, // e2
+        { col: 4, row: 4 }, // e4
+        gameState
+      );
+      if (!result) {
+        throw new Error('First move failed');
+      }
+
+      // 2. Make a different move for black
+      result = movePiece(
+        { col: 0, row: 1 }, // a7
+        { col: 0, row: 2 }, // a6
+        result
+      );
+      if (!result) {
+        throw new Error('Second move failed');
+      }
+
+      // 3. Move white pawn to e5
+      result = movePiece(
+        { col: 4, row: 4 }, // e4
+        { col: 4, row: 3 }, // e5
+        result
+      );
+      if (!result) {
+        throw new Error('Third move failed');
+      }
+
+      // 4. Move black pawn d7 to d5 (two-square advance next to white pawn at e5)
+      result = movePiece(
+        { col: 3, row: 1 }, // d7
+        { col: 3, row: 3 }, // d5
+        result
+      );
+      if (!result) {
+        throw new Error('Fourth move failed');
+      }
+
+      // 5. Perform en passant: white pawn captures from e5 to d6, removing black pawn at d5
+      result = movePiece(
+        { col: 4, row: 3 }, // e5
+        { col: 3, row: 2 }, // d6
+        result
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // White pawn should be at d6
+        expect(result.board[2][3]).toMatchObject({
+          type: PieceType.PAWN,
+          color: Color.WHITE,
+          hasMoved: true,
+        });
+
+        // Black pawn at d5 should be captured (square should be empty)
+        expect(result.board[3][3]).toBeNull();
+
+        // Original position (e5) should be empty
+        expect(result.board[3][4]).toBeNull();
+
+        // Move history should include the capture and special move
+        expect(result.moveHistory[4]).toMatchObject({
+          from: { col: 4, row: 3 },
+          to: { col: 3, row: 2 },
+          piece: { type: PieceType.PAWN, color: Color.WHITE },
+          captured: { type: PieceType.PAWN, color: Color.BLACK },
+          special: 'en-passant',
+        });
+      }
+    });
   });
 });
 
