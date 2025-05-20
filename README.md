@@ -1,7 +1,6 @@
-# Chess Board (⚠️ WIP)
+# Chess Core 
 
-A lightweight, framework-agnostic chess engine written entirely in **TypeScript**.  
-Designed to be easily integrated with modern UI frameworks like **React**, **Vue**, **Solid**, or even run in **Node.js** environments.
+A minimal, standalone chess logic implementation in **TypeScript**.
 
 ---
 
