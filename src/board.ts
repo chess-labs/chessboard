@@ -129,7 +129,7 @@ export const clearPosition = (board: Board, position: Position): boolean => {
 export const clearBoard = (board: Board): Board => {
   for (let row = 0; row < 8; row++) {
     for (let col = 0; col < 8; col++) {
-      clearPosition(board, { col, row });
+      board[row][col] = null;
     }
   }
   return board;
