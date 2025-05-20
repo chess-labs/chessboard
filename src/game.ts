@@ -299,27 +299,20 @@ export const isCheckmate = (gameState: GameState, color: Color): boolean => {
   }
 
   // Check if the player can make any move to get out of check
-  for (let row = 0; row < 8; row++) {
-    for (let col = 0; col < 8; col++) {
-      const piece = gameState.board[row][col];
+  const activePieces = getActivePieces(gameState, color);
 
-      // Skip empty squares and opponent's pieces
-      if (!piece || piece.color !== color) {
-        continue;
-      }
+  for (const piecePosition of activePieces) {
+    // Find all legal moves for this piece
+    const legalMoves = getLegalMoves(piecePosition, gameState);
 
-      // Find all legal moves for this piece
-      const legalMoves = getLegalMoves({ row, col }, gameState);
+    // Try each legal move to see if it gets the player out of check
+    for (const move of legalMoves) {
+      // Use the existing movePiece function to properly handle all special moves
+      const tempGameState = movePiece(piecePosition, move.to, gameState);
+      if (!tempGameState) continue; // Skip if the move is invalid for some reason
 
-      // Try each legal move to see if it gets the player out of check
-      for (const move of legalMoves) {
-        // Use the existing movePiece function to properly handle all special moves
-        const tempGameState = movePiece({ row, col }, move.to, gameState);
-        if (!tempGameState) continue; // Skip if the move is invalid for some reason
-
-        if (!isPlayerInCheck(tempGameState, color)) {
-          return false; // Found a move that gets out of check, not checkmate
-        }
+      if (!isPlayerInCheck(tempGameState, color)) {
+        return false; // Found a move that gets out of check, not checkmate
       }
     }
   }
@@ -349,3 +342,21 @@ export const updateCheckStatus = (gameState: GameState): GameState => {
     isCheckmate: isOpponentInCheckmate,
   };
 };
+
+/**
+ * Returns positions of all active pieces for a given color
+ */
+function getActivePieces(gameState: GameState, color: Color): Position[] {
+  const pieces: Position[] = [];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === color) {
+        pieces.push({ row, col });
+      }
+    }
+  }
+
+  return pieces;
+}
