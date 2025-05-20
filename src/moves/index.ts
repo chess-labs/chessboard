@@ -30,6 +30,11 @@ export const getLegalMoves = (position: Position, gameState: GameState): Move[] 
     return [];
   }
 
+  // Check if it's the piece's turn
+  if (piece.color !== gameState.currentTurn) {
+    return [];
+  }
+
   // Dispatch to the appropriate piece-specific function based on the piece type
   switch (piece.type) {
     case PieceType.PAWN:
