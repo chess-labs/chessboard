@@ -1,12 +1,13 @@
 import type { GameState, Move, Position } from '../types';
 import { PieceType } from '../types';
-import { getPieceAt, isValidPosition } from '../board';
+import { getPieceAt, isValidPosition, cloneBoard, clearPosition, placePiece } from '../board';
 import { getPawnMoves } from './pawn';
 import { getRookMoves } from './rook';
 import { getKnightMoves } from './knight';
 import { getBishopMoves } from './bishop';
 import { getQueenMoves } from './queen';
 import { getKingMoves } from './king';
+import { isPlayerInCheck } from '../game';
 
 /**
  * Returns all legal moves for the piece at the given position.
@@ -35,20 +36,25 @@ export const getLegalMoves = (position: Position, gameState: GameState): Move[] 
     return [];
   }
 
+  // Get potential moves based on piece type
+  let potentialMoves: Move[] = [];
+
   // Dispatch to the appropriate piece-specific function based on the piece type
   switch (piece.type) {
     case PieceType.PAWN:
-      return getPawnMoves(position, gameState);
+      potentialMoves = getPawnMoves(position, gameState);
+      break;
 
     case PieceType.ROOK:
-      return getRookMoves(position, gameState);
+      potentialMoves = getRookMoves(position, gameState);
+      break;
 
     case PieceType.KNIGHT: {
       // Knight has a different function signature, so we need to adapt it
       const knightPositions = getKnightMoves(position);
 
       // Convert positions to moves and filter friendly fire
-      return knightPositions.flatMap((to) => {
+      potentialMoves = knightPositions.flatMap((to) => {
         const targetPiece = getPieceAt(to, gameState.board);
 
         // Don't allow capturing own pieces
@@ -64,21 +70,56 @@ export const getLegalMoves = (position: Position, gameState: GameState): Move[] 
           },
         ];
       });
+      break;
     }
 
     case PieceType.BISHOP:
-      return getBishopMoves(position, gameState);
+      potentialMoves = getBishopMoves(position, gameState);
+      break;
 
     case PieceType.QUEEN:
-      return getQueenMoves(position, gameState);
+      potentialMoves = getQueenMoves(position, gameState);
+      break;
 
     case PieceType.KING:
-      return getKingMoves(position, gameState);
+      potentialMoves = getKingMoves(position, gameState);
+      break;
 
     default:
       console.error(`Unknown piece type: ${piece.type}`);
       return [];
   }
+
+  // Filter out moves that would put/leave the player's king in check
+  return potentialMoves.filter((move) => {
+    // Create a cloned board to simulate the move
+    const clonedBoard = cloneBoard(gameState.board);
+
+    // Get the piece at the source position
+    const movingPiece = getPieceAt(position, clonedBoard);
+    if (!movingPiece) return false;
+
+    // Remove the piece from the source position
+    clearPosition(clonedBoard, position);
+
+    // If there's a capture, remove the captured piece
+    const targetPiece = getPieceAt(move.to, clonedBoard);
+    if (targetPiece) {
+      clearPosition(clonedBoard, move.to);
+    }
+
+    // Place the piece at the destination
+    placePiece(clonedBoard, move.to, { ...movingPiece, hasMoved: true });
+
+    // Create a temporary game state with the move applied
+    const tempGameState = {
+      ...gameState,
+      board: clonedBoard,
+    };
+
+    // Check if the player's king is in check after this move
+    return !isPlayerInCheck(tempGameState, piece.color);
+  });
 };
 
 /**

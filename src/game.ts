@@ -1,16 +1,17 @@
+import type { Board, GameState, Move, Piece, Position, SpecialMove } from './types';
+import { Color, PieceType } from './types';
 import {
-  type Board,
-  type GameState,
-  type Move,
-  type Position,
-  type Piece,
-  Color,
-  PieceType,
-  type SpecialMove,
-} from './types';
-import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece, initBoard } from './board';
-import { getLegalMoves } from './moves';
+  clearBoard,
+  clearPosition,
+  cloneBoard,
+  getPieceAt,
+  initBoard,
+  isPathClear,
+  isValidPosition,
+  placePiece,
+} from './board';
 import { arePositionsEqual } from './helper';
+import { getLegalMoves } from './moves';
 
 /**
  * Moves a piece on the chess board following chess rules.
@@ -19,13 +20,15 @@ import { arePositionsEqual } from './helper';
  * @param to - Target position for the piece
  * @param gameState - Current game state
  * @param promotionType - Optional piece type to promote a pawn to (defaults to Queen)
+ * @param skipStatusUpdate - Internal flag to prevent recursion in validation checks
  * @returns A new game state with the updated board or null if the move is invalid
  */
 export const movePiece = (
   from: Position,
   to: Position,
   gameState: GameState,
-  promotionType: PieceType = PieceType.QUEEN
+  promotionType = PieceType.QUEEN,
+  skipStatusUpdate = false
 ): GameState | null => {
   // Check if positions are valid
   if (!isValidPosition(from) || !isValidPosition(to)) {
@@ -134,16 +137,34 @@ export const movePiece = (
   };
 
   // Create a new game state with the updated board
-  const newGameState: GameState = {
+  let newGameState: GameState = {
     ...gameState,
     board: newBoard,
     currentTurn: gameState.currentTurn === Color.WHITE ? Color.BLACK : Color.WHITE,
     moveHistory: [...gameState.moveHistory, moveHistoryEntry],
-    // Reset these flags - they should be recalculated after the move
+    // Reset these flags - they will be recalculated
     isCheck: false,
     isCheckmate: false,
     isStalemate: false,
   };
+
+  // Check if this move would put the player's own king in check
+  const playerColor = gameState.currentTurn;
+
+  // Create a temporary state with original player's turn to check if their king is in check
+  const tempStateForCheck = {
+    ...newGameState,
+    currentTurn: playerColor,
+  };
+
+  if (isPlayerInCheck(tempStateForCheck, playerColor)) {
+    return null; // Move is illegal because it puts/leaves own king in check
+  }
+
+  // Update check, checkmate and stalemate status for the opponent (unless skipped)
+  if (!skipStatusUpdate) {
+    newGameState = updateGameStatus(newGameState);
+  }
 
   // Return the new game state
   return newGameState;
@@ -263,7 +284,83 @@ export const isPlayerInCheck = (gameState: GameState, color: Color): boolean => 
 
   // Check if any opponent piece can attack the king's position
   const opponentColor = color === Color.WHITE ? Color.BLACK : Color.WHITE;
-  return canColorAttackPosition(gameState, opponentColor, kingPosition);
+
+  // Look through all squares to find opponent pieces
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === opponentColor) {
+        const piecePosition = { row, col };
+
+        // 간소화된 방식으로 공격 가능 여부 확인 (재귀 방지)
+        if (canPieceAttackPosition(piece, piecePosition, kingPosition, gameState.board)) {
+          return true;
+        }
+      }
+    }
+  }
+
+  return false;
+};
+
+/**
+ * 기물이 주어진 위치를 공격할 수 있는지 확인하는 간소화된 함수
+ * getLegalMoves를 호출하지 않고 직접 이동 규칙 확인
+ */
+const canPieceAttackPosition = (
+  piece: Piece,
+  piecePosition: Position,
+  targetPosition: Position,
+  board: Board
+): boolean => {
+  // 두 위치 간의 차이 계산
+  const deltaRow = targetPosition.row - piecePosition.row;
+  const deltaCol = targetPosition.col - piecePosition.col;
+  const absDeltaRow = Math.abs(deltaRow);
+  const absDeltaCol = Math.abs(deltaCol);
+
+  switch (piece.type) {
+    case PieceType.PAWN: {
+      // 폰은 대각선으로만 공격 가능
+      const direction = piece.color === Color.WHITE ? -1 : 1;
+      return absDeltaCol === 1 && deltaRow === direction;
+    }
+
+    case PieceType.ROOK:
+      // 룩은 수직이나 수평으로만 이동
+      if ((deltaRow === 0 || deltaCol === 0) && isPathClear(piecePosition, targetPosition, board)) {
+        return true;
+      }
+      return false;
+
+    case PieceType.KNIGHT:
+      // 나이트는 L자 이동
+      return (absDeltaRow === 2 && absDeltaCol === 1) || (absDeltaRow === 1 && absDeltaCol === 2);
+
+    case PieceType.BISHOP:
+      // 비숍은 대각선으로만 이동
+      if (absDeltaRow === absDeltaCol && isPathClear(piecePosition, targetPosition, board)) {
+        return true;
+      }
+      return false;
+
+    case PieceType.QUEEN:
+      // 퀸은 수직, 수평 또는 대각선으로 이동
+      if (
+        (deltaRow === 0 || deltaCol === 0 || absDeltaRow === absDeltaCol) &&
+        isPathClear(piecePosition, targetPosition, board)
+      ) {
+        return true;
+      }
+      return false;
+
+    case PieceType.KING:
+      // 킹은 모든 방향으로 한 칸만 이동
+      return absDeltaRow <= 1 && absDeltaCol <= 1;
+
+    default:
+      return false;
+  }
 };
 
 /**
@@ -318,48 +415,220 @@ export const isCheckmate = (gameState: GameState, color: Color): boolean => {
     return false; // Not in check, so not in checkmate
   }
 
-  // Check if the player can make any move to get out of check
+  // Find the king position
+  const kingPosition = findKingPosition(gameState, color);
+  if (!kingPosition) return false; // If no king found (shouldn't happen)
+
+  // 1. 왕이 움직여서 체크를 피할 수 있는지 검사
+  const kingPiece = getPieceAt(kingPosition, gameState.board);
+  if (!kingPiece) return false;
+
+  // 왕의 모든 가능한 이동 위치 확인
+  const kingMoves = getLegalMoves(kingPosition, gameState);
+  for (const move of kingMoves) {
+    // 임시 게임 상태에서 왕 이동
+    const newGameState = movePiece(kingPosition, move.to, gameState, undefined, true);
+    if (newGameState && !isPlayerInCheck(newGameState, color)) {
+      return false; // 왕이 움직여서 체크를 피할 수 있음
+    }
+  }
+
+  // 2. 다른 기물이 공격자를 막거나 잡을 수 있는지 검사
+  const attackingPieces = findAttackingPieces(gameState, color);
+
+  // 공격자가 여러 개이면 왕이 직접 피하는 것만 가능
+  if (attackingPieces.length > 1) {
+    // 이미 왕의 이동으로 체크를 피할 수 없다고 확인했으므로 체크메이트
+    return true;
+  }
+
+  // 공격자가 하나일 경우, 다른 기물이 이를 막거나 잡을 수 있는지 확인
+  if (attackingPieces.length === 1) {
+    const attacker = attackingPieces[0];
+    const attackerPosition = { row: attacker.row, col: attacker.col };
+
+    // 3-1. 다른 기물이 공격자를 잡을 수 있는지 확인
+    const defenders = getActivePieces(gameState, color);
+    for (const defenderPos of defenders) {
+      // 왕은 이미 확인했으므로 스킵
+      if (defenderPos.row === kingPosition.row && defenderPos.col === kingPosition.col) {
+        continue;
+      }
+
+      if (isValidMove(defenderPos, attackerPosition, gameState)) {
+        const newGameState = movePiece(defenderPos, attackerPosition, gameState, undefined, true);
+        if (newGameState && !isPlayerInCheck(newGameState, color)) {
+          return false; // 다른 기물이 공격자를 잡을 수 있음
+        }
+      }
+    }
+
+    // 3-2. 공격 경로를 다른 기물이 막을 수 있는지 확인
+    // 이는 비숍, 룩, 퀸의 경우에만 가능
+    if (
+      attacker.piece.type === PieceType.BISHOP ||
+      attacker.piece.type === PieceType.ROOK ||
+      attacker.piece.type === PieceType.QUEEN
+    ) {
+      const blockingSquares = getPathBetween(attackerPosition, kingPosition);
+
+      for (const defenderPos of defenders) {
+        // 왕은 이미 확인했으므로 스킵
+        if (defenderPos.row === kingPosition.row && defenderPos.col === kingPosition.col) {
+          continue;
+        }
+
+        for (const blockPos of blockingSquares) {
+          if (isValidMove(defenderPos, blockPos, gameState)) {
+            const newGameState = movePiece(defenderPos, blockPos, gameState, undefined, true);
+            if (newGameState && !isPlayerInCheck(newGameState, color)) {
+              return false; // 다른 기물이 공격 경로를 막을 수 있음
+            }
+          }
+        }
+      }
+    }
+  }
+
+  // 모든 체크를 피할 방법이 없으면 체크메이트
+  return true;
+};
+
+/**
+ * 킹을 공격하는 모든 적 기물의 위치 찾기
+ */
+function findAttackingPieces(
+  gameState: GameState,
+  defendingColor: Color
+): Array<{ row: number; col: number; piece: Piece }> {
+  const kingPosition = findKingPosition(gameState, defendingColor);
+  if (!kingPosition) return [];
+
+  const attackingColor = defendingColor === Color.WHITE ? Color.BLACK : Color.WHITE;
+  const attackers = [];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === attackingColor) {
+        const piecePosition = { row, col };
+        if (canPieceAttackPosition(piece, piecePosition, kingPosition, gameState.board)) {
+          attackers.push({ row, col, piece });
+        }
+      }
+    }
+  }
+
+  return attackers;
+}
+
+/**
+ * 두 위치 사이의 경로에 있는 모든 칸 반환 (공격자와 킹 위치 제외)
+ */
+function getPathBetween(from: Position, to: Position): Position[] {
+  const path: Position[] = [];
+
+  const deltaRow = to.row - from.row;
+  const deltaCol = to.col - from.col;
+
+  // 직선 또는 대각선 경로인지 확인
+  const isLinear = deltaRow === 0 || deltaCol === 0 || Math.abs(deltaRow) === Math.abs(deltaCol);
+
+  if (!isLinear) return path; // 경로가 직선 또는 대각선이 아니면 빈 배열 반환
+
+  const rowStep = deltaRow === 0 ? 0 : deltaRow > 0 ? 1 : -1;
+  const colStep = deltaCol === 0 ? 0 : deltaCol > 0 ? 1 : -1;
+
+  let row = from.row + rowStep;
+  let col = from.col + colStep;
+
+  // 목적지 직전까지 모든 칸 추가
+  while (row !== to.row || col !== to.col) {
+    path.push({ row, col });
+    row += rowStep;
+    col += colStep;
+  }
+
+  return path;
+}
+
+/**
+ * Check if a player is in stalemate
+ * @param gameState - Current game state
+ * @param color - Color of the player to check
+ * @returns True if the player is in stalemate, false otherwise
+ */
+export const isStalemate = (gameState: GameState, color: Color): boolean => {
+  // First, check if the player is in check
+  if (isPlayerInCheck(gameState, color)) {
+    return false; // If in check, it's not stalemate
+  }
+
+  // Check if the player can make any legal move
   const activePieces = getActivePieces(gameState, color);
 
   for (const piecePosition of activePieces) {
     // Find all legal moves for this piece
     const legalMoves = getLegalMoves(piecePosition, gameState);
 
-    // Try each legal move to see if it gets the player out of check
-    for (const move of legalMoves) {
-      // Use the existing movePiece function to properly handle all special moves
-      const tempGameState = movePiece(piecePosition, move.to, gameState);
-      if (!tempGameState) continue; // Skip if the move is invalid for some reason
+    // 디버깅용 로그 추가
+    console.log(`Found ${legalMoves.length} moves for piece at ${piecePosition.col},${piecePosition.row}`);
 
+    // Try each legal move to see if it's valid (doesn't put king in check)
+    for (const move of legalMoves) {
+      // Create a clone of the board to test the move
+      const tempBoard = cloneBoard(gameState.board);
+
+      // Get the piece
+      const piece = getPieceAt(piecePosition, tempBoard);
+      if (!piece) continue;
+
+      // Move the piece on the cloned board
+      clearPosition(tempBoard, piecePosition);
+      placePiece(tempBoard, move.to, { ...piece, hasMoved: true });
+
+      // Create a temporary game state with the move applied
+      const tempGameState = {
+        ...gameState,
+        board: tempBoard,
+        currentTurn: color,
+      };
+
+      // Check if the king is in check after this move
       if (!isPlayerInCheck(tempGameState, color)) {
-        return false; // Found a move that gets out of check, not checkmate
+        console.log(`Found valid move from ${piecePosition.col},${piecePosition.row} to ${move.to.col},${move.to.row}`);
+        return false; // Found a legal move, not stalemate
       }
     }
   }
 
-  // No move can get the player out of check, so it's checkmate
+  // No legal moves available, it's stalemate
+  console.log('No legal moves found, stalemate detected');
   return true;
 };
 
 /**
- * Update the game state to reflect check and checkmate status for the opponent
+ * Update game state for check, checkmate and stalemate
  * @param gameState - Current game state
- * @returns Updated game state with isCheck and isCheckmate flags set for the opponent's status
+ * @returns Updated game state with check, checkmate and stalemate flags
  */
-export const updateCheckStatus = (gameState: GameState): GameState => {
+export const updateGameStatus = (gameState: GameState): GameState => {
   const currentPlayer = gameState.currentTurn;
-  const opponentColor = currentPlayer === Color.WHITE ? Color.BLACK : Color.WHITE;
 
-  // Check if the opponent is in check
-  const isOpponentInCheck = isPlayerInCheck(gameState, opponentColor);
+  // Check if current player is in check
+  const isInCheck = isPlayerInCheck(gameState, currentPlayer);
 
-  // Check if the opponent is in checkmate
-  const isOpponentInCheckmate = isCheckmate(gameState, opponentColor);
+  // Check if current player is in checkmate
+  const isInCheckmate = isInCheck && isCheckmate(gameState, currentPlayer);
+
+  // Check if current player is in stalemate
+  const isInStalemate = !isInCheck && isStalemate(gameState, currentPlayer);
 
   return {
     ...gameState,
-    isCheck: isOpponentInCheck,
-    isCheckmate: isOpponentInCheckmate,
+    isCheck: isInCheck,
+    isCheckmate: isInCheckmate,
+    isStalemate: isInStalemate,
   };
 };
 

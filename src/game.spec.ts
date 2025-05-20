@@ -7,9 +7,14 @@ import {
   addMoveToHistory,
   getCurrentPlayer,
   getMoveHistory,
+  isPlayerInCheck,
+  updateGameStatus,
+  isCheckmate,
+  isStalemate,
 } from './game';
-import { clearBoard, initBoard, placePiece } from './board';
-import { Color, PieceType, type GameState } from './types';
+import { clearBoard, clearPosition, initBoard, placePiece } from './board';
+import { Color, PieceType, type GameState, type Position } from './types';
+import { getLegalMoves } from './moves';
 
 describe('Game functions', () => {
   // Create a fresh game state for each test
@@ -405,6 +410,361 @@ describe('Game functions', () => {
           promotedTo: PieceType.KNIGHT,
         });
       }
+    });
+  });
+
+  describe('Special game rules', () => {
+    it('should prevent moving when it is not your turn', () => {
+      const gameState = createGameState(); // White's turn initially
+
+      // Try to move black pawn - should fail
+      const result = movePiece(
+        { col: 4, row: 1 }, // e7 (black pawn)
+        { col: 4, row: 3 }, // e5
+        gameState
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('should correctly handle invalid promotion type by falling back to queen', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place a white pawn one step away from promotion
+      placePiece(gameState.board, { col: 4, row: 1 }, { type: PieceType.PAWN, color: Color.WHITE, hasMoved: true });
+      gameState.currentTurn = Color.WHITE;
+
+      // Try to promote to an invalid piece type (king)
+      const result = movePiece(
+        { col: 4, row: 1 },
+        { col: 4, row: 0 },
+        gameState,
+        PieceType.KING // Invalid promotion type
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // Should be promoted to a queen (default) instead of king
+        expect(result.board[0][4]).toMatchObject({
+          type: PieceType.QUEEN, // Not KING
+          color: Color.WHITE,
+        });
+      }
+    });
+
+    it('should prevent moves that would put own king in check', () => {
+      const gameState = createGameState();
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Situation where if the bishop moves, the rook can attack the king in a straight line
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      placePiece(gameState.board, { col: 3, row: 6 }, { type: PieceType.BISHOP, color: Color.WHITE }); // Bishop position
+      placePiece(gameState.board, { col: 4, row: 0 }, { type: PieceType.ROOK, color: Color.BLACK });
+
+      gameState.currentTurn = Color.WHITE;
+
+      // If the bishop moves sideways, the rook can attack the king
+      const result = movePiece(
+        { col: 3, row: 6 }, // bishop
+        { col: 2, row: 5 }, // diagonal move
+        gameState
+      );
+
+      // The move should be rejected (return null)
+      expect(result).toBeNull();
+    });
+
+    // This test is modified because check state detection is not supported in the current implementation
+    it('should detect check state', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Set up a simpler check situation
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      placePiece(gameState.board, { col: 4, row: 0 }, { type: PieceType.QUEEN, color: Color.BLACK });
+
+      // Verify check state
+      const isInCheck = isPlayerInCheck(gameState, Color.WHITE);
+      expect(isInCheck).toBe(true);
+
+      // Verify game state update
+      const updatedState = updateGameStatus({
+        ...gameState,
+        currentTurn: Color.WHITE,
+      });
+      expect(updatedState.isCheck).toBe(true);
+    });
+
+    // This test is modified because checkmate detection is not supported in the current implementation
+    it('should detect checkmate', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Set up a clearer checkmate situation
+      // Situation where the king is in the corner, the queen is directly attacking, and there's no escape
+      placePiece(gameState.board, { col: 0, row: 0 }, { type: PieceType.KING, color: Color.WHITE }); // King at a8
+      placePiece(gameState.board, { col: 1, row: 0 }, { type: PieceType.QUEEN, color: Color.BLACK }); // Queen at c8
+      placePiece(gameState.board, { col: 1, row: 2 }, { type: PieceType.ROOK, color: Color.BLACK }); // Rook at b6
+
+      // Set current turn to WHITE (the player in checkmate)
+      gameState.currentTurn = Color.WHITE;
+
+      // Verify checkmate state
+      const isInCheckmate = isCheckmate(gameState, Color.WHITE);
+      expect(isInCheckmate).toBe(true);
+
+      // Verify game state update
+      const updatedState = updateGameStatus({
+        ...gameState,
+        currentTurn: Color.WHITE,
+      });
+
+      expect(updatedState.isCheck).toBe(true);
+      expect(updatedState.isCheckmate).toBe(true);
+    });
+
+    it('should correctly detect stalemate', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // 명확한 스테일메이트 상황 설정: 흑 킹은 h8에 있고 움직일 수 없음
+      placePiece(gameState.board, { col: 7, row: 0 }, { type: PieceType.KING, color: Color.BLACK });
+
+      // 백 퀸은 f7에 위치하여 g8과 g7을 통제
+      placePiece(gameState.board, { col: 5, row: 1 }, { type: PieceType.QUEEN, color: Color.WHITE });
+
+      // 백 룩은 a8에 위치하여 h8 옆의 h7을 통제
+      placePiece(gameState.board, { col: 0, row: 2 }, { type: PieceType.ROOK, color: Color.WHITE });
+
+      // Black's turn
+      gameState.currentTurn = Color.BLACK;
+
+      // In this situation, the black king is not in check but has no legal moves (stalemate)
+      const isInCheck = isPlayerInCheck(gameState, Color.BLACK);
+      expect(isInCheck).toBe(false); // Not in check
+
+      expect(isStalemate(gameState, Color.BLACK)).toBe(true);
+
+      // Update game status and check if stalemate is detected
+      const updatedState = updateGameStatus(gameState);
+      expect(updatedState.isStalemate).toBe(true);
+    });
+  });
+
+  describe('Edge cases', () => {
+    it('should handle moves to non-existent positions gracefully', () => {
+      const gameState = createGameState();
+
+      // Try to move to a position outside the board
+      const result = movePiece(
+        { col: 0, row: 6 }, // a2 pawn
+        { col: -1, row: 5 }, // out of bounds
+        gameState
+      );
+
+      expect(result).toBeNull();
+    });
+
+    it('should handle moving a non-existent piece gracefully', () => {
+      const gameState = createGameState();
+
+      // Clear a position
+      clearPosition(gameState.board, { col: 0, row: 6 });
+
+      // Try to move from an empty square
+      const result = movePiece(
+        { col: 0, row: 6 }, // empty square
+        { col: 0, row: 5 },
+        gameState
+      );
+
+      expect(result).toBeNull();
+    });
+  });
+
+  describe('Special moves', () => {
+    it('should correctly handle kingside castling', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place pieces for castling
+      // King at e1
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      // Rook at h1
+      placePiece(gameState.board, { col: 7, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
+
+      // White's turn
+      gameState.currentTurn = Color.WHITE;
+
+      // Perform kingside castling
+      const result = movePiece(
+        { col: 4, row: 7 }, // e1
+        { col: 6, row: 7 }, // g1
+        gameState
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // King should be at g1
+        expect(result.board[7][6]).toMatchObject({
+          type: PieceType.KING,
+          color: Color.WHITE,
+        });
+
+        // Rook should be at f1
+        expect(result.board[7][5]).toMatchObject({
+          type: PieceType.ROOK,
+          color: Color.WHITE,
+        });
+
+        // Original positions should be empty
+        expect(result.board[7][4]).toBeNull(); // e1
+        expect(result.board[7][7]).toBeNull(); // h1
+
+        // Move history should include castling
+        expect(result.moveHistory[0]).toMatchObject({
+          special: 'castling',
+        });
+      }
+    });
+
+    it('should correctly handle queenside castling', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place pieces for castling
+      // King at e1
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      // Rook at a1
+      placePiece(gameState.board, { col: 0, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
+
+      // White's turn
+      gameState.currentTurn = Color.WHITE;
+
+      // Perform queenside castling
+      const result = movePiece(
+        { col: 4, row: 7 }, // e1
+        { col: 2, row: 7 }, // c1
+        gameState
+      );
+
+      expect(result).not.toBeNull();
+      if (result) {
+        // King should be at c1
+        expect(result.board[7][2]).toMatchObject({
+          type: PieceType.KING,
+          color: Color.WHITE,
+        });
+
+        // Rook should be at d1
+        expect(result.board[7][3]).toMatchObject({
+          type: PieceType.ROOK,
+          color: Color.WHITE,
+        });
+
+        // Original positions should be empty
+        expect(result.board[7][4]).toBeNull(); // e1
+        expect(result.board[7][0]).toBeNull(); // a1
+
+        // Move history should include castling
+        expect(result.moveHistory[0]).toMatchObject({
+          special: 'castling',
+        });
+      }
+    });
+
+    it('should not allow castling when king has already moved', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place pieces for castling
+      // King at e1 with hasMoved flag
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE, hasMoved: true });
+      // Rook at h1
+      placePiece(gameState.board, { col: 7, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
+
+      // White's turn
+      gameState.currentTurn = Color.WHITE;
+
+      // Try to castle
+      const result = movePiece(
+        { col: 4, row: 7 }, // e1
+        { col: 6, row: 7 }, // g1
+        gameState
+      );
+
+      // Castling should not be allowed
+      expect(result).toBeNull();
+    });
+
+    it('should not allow castling when rook has already moved', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place pieces for castling
+      // King at e1
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      // Rook at h1 with hasMoved flag
+      placePiece(gameState.board, { col: 7, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: true });
+
+      // White's turn
+      gameState.currentTurn = Color.WHITE;
+
+      // Try to castle
+      const result = movePiece(
+        { col: 4, row: 7 }, // e1
+        { col: 6, row: 7 }, // g1
+        gameState
+      );
+
+      // Castling should not be allowed
+      expect(result).toBeNull();
+    });
+
+    it('should not allow castling when pieces are between king and rook', () => {
+      const gameState = createGameState();
+
+      // Clear the board
+      clearBoard(gameState.board);
+
+      // Place pieces for castling
+      // King at e1
+      placePiece(gameState.board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
+      // Rook at h1
+      placePiece(gameState.board, { col: 7, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
+      // Bishop at f1 (blocking)
+      placePiece(gameState.board, { col: 5, row: 7 }, { type: PieceType.BISHOP, color: Color.WHITE });
+
+      // White's turn
+      gameState.currentTurn = Color.WHITE;
+
+      // Try to castle
+      const result = movePiece(
+        { col: 4, row: 7 }, // e1
+        { col: 6, row: 7 }, // g1
+        gameState
+      );
+
+      // Castling should not be allowed
+      expect(result).toBeNull();
     });
   });
 });
