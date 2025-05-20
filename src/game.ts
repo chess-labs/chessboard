@@ -1,5 +1,5 @@
 import { type Board, type GameState, type Move, type Position, type Piece, Color, type SpecialMove } from './types';
-import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece } from './board';
+import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece, initBoard } from './board';
 import { getLegalMoves } from './moves';
 import { arePositionsEqual } from './helper';
 
@@ -134,4 +134,102 @@ export const isValidMove = (from: Position, to: Position, gameState: GameState):
 
   // Check if the requested move is in the list of legal moves
   return legalMoves.some((move) => arePositionsEqual(move.to, to));
+};
+
+/**
+ * Initialize a new game state with the standard chess setup
+ * @returns Initial game state with pieces in starting positions
+ */
+export const initGameState = (): GameState => {
+  return {
+    board: initBoard(),
+    currentTurn: Color.WHITE, // White always moves first in standard chess
+    moveHistory: [],
+    isCheck: false,
+    isCheckmate: false,
+    isStalemate: false,
+  };
+};
+
+/**
+ * Change the current turn from one player to another
+ * @param gameState - Current game state
+ * @returns New game state with updated current player
+ */
+export const switchTurn = (gameState: GameState): GameState => {
+  return {
+    ...gameState,
+    currentTurn: gameState.currentTurn === Color.WHITE ? Color.BLACK : Color.WHITE,
+  };
+};
+
+/**
+ * Add a move to the game history
+ * @param gameState - Current game state
+ * @param from - Starting position of the move
+ * @param to - Ending position of the move
+ * @param piece - The piece that was moved
+ * @param captured - Optional captured piece
+ * @param special - Optional special move type
+ * @returns New game state with updated move history
+ */
+export const addMoveToHistory = (
+  gameState: GameState,
+  from: Position,
+  to: Position,
+  piece: Piece,
+  captured?: Piece,
+  special?: SpecialMove
+): GameState => {
+  const moveHistoryEntry = {
+    from,
+    to,
+    piece: { ...piece },
+    captured,
+    special,
+  };
+
+  return {
+    ...gameState,
+    moveHistory: [...gameState.moveHistory, moveHistoryEntry],
+  };
+};
+
+/**
+ * Get the current player's color
+ * @param gameState - Current game state
+ * @returns The color of the current player
+ */
+export const getCurrentPlayer = (gameState: GameState): Color => {
+  return gameState.currentTurn;
+};
+
+/**
+ * Get the move history
+ * @param gameState - Current game state
+ * @returns Array of move history entries
+ */
+export const getMoveHistory = (
+  gameState: GameState
+): Array<{
+  from: Position;
+  to: Position;
+  piece: Piece;
+  captured?: Piece;
+  special?: SpecialMove;
+}> => {
+  return [...gameState.moveHistory];
+};
+
+/**
+ * Check if a specific player is in check
+ * @param gameState - Current game state
+ * @param color - Color of the player to check
+ * @returns True if the player is in check, false otherwise
+ */
+export const isPlayerInCheck = (gameState: GameState, color: Color): boolean => {
+  // For now, this is a placeholder that just returns the isCheck value
+  // A proper implementation would check if the king of the specified color
+  // is under attack by any opponent's piece
+  return gameState.isCheck && gameState.currentTurn === color;
 };
