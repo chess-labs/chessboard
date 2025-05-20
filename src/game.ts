@@ -285,3 +285,78 @@ const canColorAttackPosition = (gameState: GameState, color: Color, position: Po
   }
   return false;
 };
+
+/**
+ * Check if a player is in checkmate
+ * @param gameState - Current game state
+ * @param color - Color of the player to check
+ * @returns True if the player is in checkmate, false otherwise
+ */
+export const isCheckmate = (gameState: GameState, color: Color): boolean => {
+  // First, check if the player is in check
+  if (!isPlayerInCheck(gameState, color)) {
+    return false; // Not in check, so not in checkmate
+  }
+
+  // Check if the player can make any move to get out of check
+  const activePieces = getActivePieces(gameState, color);
+
+  for (const piecePosition of activePieces) {
+    // Find all legal moves for this piece
+    const legalMoves = getLegalMoves(piecePosition, gameState);
+
+    // Try each legal move to see if it gets the player out of check
+    for (const move of legalMoves) {
+      // Use the existing movePiece function to properly handle all special moves
+      const tempGameState = movePiece(piecePosition, move.to, gameState);
+      if (!tempGameState) continue; // Skip if the move is invalid for some reason
+
+      if (!isPlayerInCheck(tempGameState, color)) {
+        return false; // Found a move that gets out of check, not checkmate
+      }
+    }
+  }
+
+  // No move can get the player out of check, so it's checkmate
+  return true;
+};
+
+/**
+ * Update the game state to reflect check and checkmate status for the opponent
+ * @param gameState - Current game state
+ * @returns Updated game state with isCheck and isCheckmate flags set for the opponent's status
+ */
+export const updateCheckStatus = (gameState: GameState): GameState => {
+  const currentPlayer = gameState.currentTurn;
+  const opponentColor = currentPlayer === Color.WHITE ? Color.BLACK : Color.WHITE;
+
+  // Check if the opponent is in check
+  const isOpponentInCheck = isPlayerInCheck(gameState, opponentColor);
+
+  // Check if the opponent is in checkmate
+  const isOpponentInCheckmate = isCheckmate(gameState, opponentColor);
+
+  return {
+    ...gameState,
+    isCheck: isOpponentInCheck,
+    isCheckmate: isOpponentInCheckmate,
+  };
+};
+
+/**
+ * Returns positions of all active pieces for a given color
+ */
+function getActivePieces(gameState: GameState, color: Color): Position[] {
+  const pieces: Position[] = [];
+
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === color) {
+        pieces.push({ row, col });
+      }
+    }
+  }
+
+  return pieces;
+}
