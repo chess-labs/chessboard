@@ -108,6 +108,11 @@ export const getLegalMoves = (position: Position, gameState: GameState): Move[] 
       clearPosition(clonedBoard, move.to);
     }
 
+    // Handle en passant capture specifically
+    if (move.special === 'en-passant' && move.capturedPiecePosition) {
+      clearPosition(clonedBoard, move.capturedPiecePosition);
+    }
+
     // Place the piece at the destination
     placePiece(clonedBoard, move.to, { ...movingPiece, hasMoved: true });
 

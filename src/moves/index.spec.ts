@@ -116,8 +116,4 @@ describe('getLegalMoves', () => {
     expect(captureMove).toBeDefined();
     expect(captureMove?.capture).toBe(true);
   });
-
-  // TODO: Add tests for castling, en passant, promotion, etc.
-
-  // TODO: Add tests for check and checkmate
 });

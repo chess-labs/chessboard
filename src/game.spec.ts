@@ -537,13 +537,13 @@ describe('Game functions', () => {
       // Clear the board
       clearBoard(gameState.board);
 
-      // 명확한 스테일메이트 상황 설정: 흑 킹은 h8에 있고 움직일 수 없음
+      // Set up a clear stalemate situation: Black king is at h8 and cannot move
       placePiece(gameState.board, { col: 7, row: 0 }, { type: PieceType.KING, color: Color.BLACK });
 
-      // 백 퀸은 f7에 위치하여 g8과 g7을 통제
+      // White queen is at f7, controlling g8 and g7
       placePiece(gameState.board, { col: 5, row: 1 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
-      // 백 룩은 a8에 위치하여 h8 옆의 h7을 통제
+      // White rook is at a8, controlling h7 next to h8
       placePiece(gameState.board, { col: 0, row: 2 }, { type: PieceType.ROOK, color: Color.WHITE });
 
       // Black's turn
