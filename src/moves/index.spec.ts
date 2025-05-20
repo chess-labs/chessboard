@@ -116,12 +116,8 @@ describe('getLegalMoves', () => {
     // Place a black pawn at g6 (diagonal to the bishop)
     placePiece(gameState.board, { col: 6, row: 1 }, { type: PieceType.PAWN, color: Color.BLACK });
 
-    console.log('Bishop position:', { col: 4, row: 3 });
-    console.log('Pawn position:', { col: 6, row: 1 });
-
     // Get legal moves for the bishop
     const moves = getLegalMoves({ col: 4, row: 3 }, gameState);
-    console.log('Available moves:', JSON.stringify(moves, null, 2));
 
     // Check that capture move exists
     const captureMove = moves.find((move) => move.to.col === 6 && move.to.row === 1);
