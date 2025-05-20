@@ -9,11 +9,11 @@
   ],
   "scripts": {
     "build": "tsc",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "prepare": "npm run build"
+    "test:ui": "vitest --ui"
   },
   "keywords": [
     "chess",
@@ -26,6 +26,7 @@
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
     "@types/node": "^22.15.19",
+    "@vitest/ui": "3.1.3",
     "typescript": "^5.4.5",
     "vitest": "^3.1.3"
   }

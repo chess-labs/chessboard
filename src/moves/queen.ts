@@ -1,7 +1,6 @@
 import type { Board, GameState, Move, Position } from '../types';
 import { Color, PieceType } from '../types';
 import { getPieceAt, isPathClear, isValidPosition } from '../board';
-import { getMovesInDirection } from '../util';
 
 /**
  * Get all possible moves for a queen at the given position.
@@ -17,18 +16,18 @@ export const getQueenMoves = (position: Position, gameState: GameState): Move[] 
 
   // Directions: horizontal, vertical, and diagonal
   const directions = [
-    { dx: -1, dy: 0 }, // left
-    { dx: 1, dy: 0 }, // right
-    { dx: 0, dy: -1 }, // up
-    { dx: 0, dy: 1 }, // down
-    { dx: -1, dy: -1 }, // up-left
-    { dx: 1, dy: -1 }, // up-right
-    { dx: -1, dy: 1 }, // down-left
-    { dx: 1, dy: 1 }, // down-right
+    { deltaCol: -1, deltaRow: 0 }, // left
+    { deltaCol: 1, deltaRow: 0 }, // right
+    { deltaCol: 0, deltaRow: -1 }, // up
+    { deltaCol: 0, deltaRow: 1 }, // down
+    { deltaCol: -1, deltaRow: -1 }, // up-left
+    { deltaCol: 1, deltaRow: -1 }, // up-right
+    { deltaCol: -1, deltaRow: 1 }, // down-left
+    { deltaCol: 1, deltaRow: 1 }, // down-right
   ];
 
   for (const direction of directions) {
-    moves.push(...getMovesInDirection(position, direction.dx, direction.dy, piece.color, board));
+    moves.push(...getMovesInDirection(position, direction.deltaCol, direction.deltaRow, piece.color, board));
   }
 
   return moves;
@@ -56,20 +55,59 @@ export const isValidQueenMove = (from: Position, to: Position, gameState: GameSt
   if (!isValidPosition(to)) return false;
 
   // Check if the move is horizontal, vertical, or diagonal
-  const dx = Math.abs(to.x - from.x);
-  const dy = Math.abs(to.y - from.y);
-  const isHorizontal = dy === 0 && dx > 0;
-  const isVertical = dx === 0 && dy > 0;
-  const isDiagonal = dx === dy && dx > 0;
+  const deltaCol = Math.abs(to.col - from.col);
+  const deltaRow = Math.abs(to.row - from.row);
+  const isHorizontal = deltaRow === 0 && deltaCol > 0;
+  const isVertical = deltaCol === 0 && deltaRow > 0;
+  const isDiagonal = deltaCol === deltaRow && deltaCol > 0;
 
   if (!isHorizontal && !isVertical && !isDiagonal) return false;
 
-  // Check if the path is clear
-  if (!isPathClear(from, to, board)) return false;
+  return (
+    isPathClear(from, to, board) && (getPieceAt(to, board) === null || getPieceAt(to, board)?.color !== piece.color)
+  );
+};
 
-  // Check if the destination is empty or has an opponent's piece
-  const targetPiece = getPieceAt(to, board);
-  if (targetPiece && targetPiece.color === piece.color) return false;
-
-  return true;
+/**
+ * Get all moves in a specific direction
+ */
+export const getMovesInDirection = (
+  position: Position,
+  deltaCol: number,
+  deltaRow: number,
+  pieceColor: Color,
+  board: Board
+): Move[] => {
+  const moves: Move[] = [];
+  let currentCol = position.col + deltaCol;
+  let currentRow = position.row + deltaRow;
+  while (true) {
+    // Check if position is valid (within board)
+    if (!isValidPosition({ col: currentCol, row: currentRow })) break;
+    const targetPosition: Position = { col: currentCol, row: currentRow };
+    const targetPiece = getPieceAt(targetPosition, board);
+    if (targetPiece === null) {
+      // Empty square - can move here
+      moves.push({
+        from: position,
+        to: targetPosition,
+        capture: false,
+      });
+    } else {
+      // Square has a piece
+      if (targetPiece.color !== pieceColor) {
+        // Opponent's piece - can capture
+        moves.push({
+          from: position,
+          to: targetPosition,
+          capture: true,
+        });
+      }
+      // Either way, can't move further in this direction
+      break;
+    }
+    currentCol += deltaCol;
+    currentRow += deltaRow;
+  }
+  return moves;
 };

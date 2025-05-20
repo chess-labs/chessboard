@@ -20,12 +20,12 @@ export enum Color {
 
 /**
  * Interface representing a position on the chess board
- * x: 0-7 (a-h)
- * y: 0-7 (1-8)
+ * col: 0-7 (a-h)
+ * row: 0-7 (1-8)
  */
 export interface Position {
-  x: number;
-  y: number;
+  col: number;
+  row: number;
 }
 
 /**

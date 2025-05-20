@@ -16,19 +16,19 @@ export const getBishopMoves = (from: Position, gameState: GameState): Move[] => 
 
   const moves: Move[] = [];
   const directions = [
-    { x: 1, y: 1 }, // down-right
-    { x: 1, y: -1 }, // up-right
-    { x: -1, y: 1 }, // down-left
-    { x: -1, y: -1 }, // up-left
+    { col: 1, row: 1 }, // down-right
+    { col: 1, row: -1 }, // up-right
+    { col: -1, row: 1 }, // down-left
+    { col: -1, row: -1 }, // up-left
   ];
 
   // Check each diagonal direction
   for (const dir of directions) {
-    let currentPos: Position = { x: from.x, y: from.y };
+    let currentPos: Position = { col: from.col, row: from.row };
 
     // Move in the current direction until reaching the edge or a piece
     while (true) {
-      currentPos = { x: currentPos.x + dir.x, y: currentPos.y + dir.y };
+      currentPos = { col: currentPos.col + dir.col, row: currentPos.row + dir.row };
 
       // Stop if position is outside the board
       if (!isValidPosition(currentPos)) {
@@ -80,10 +80,10 @@ export const isValidBishopMove = (from: Position, to: Position, gameState: GameS
   }
 
   // Check if the move is diagonal
-  const xDiff = Math.abs(to.x - from.x);
-  const yDiff = Math.abs(to.y - from.y);
+  const xDiff = Math.abs(to.col - from.col);
+  const yDiff = Math.abs(to.row - from.row);
 
-  // Bishop moves diagonally (x and y differences must be equal)
+  // Bishop moves diagonally (col and row differences must be equal)
   if (xDiff !== yDiff) {
     return false;
   }

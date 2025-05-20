@@ -1,7 +1,6 @@
 import type { Board, GameState, Move, Position } from '../types';
 import { Color, PieceType } from '../types';
 import { getPieceAt, isPathClear, isValidPosition } from '../board';
-import { getMovesInDirection } from '../util';
 
 /**
  * Get all possible moves for a rook at the given position
@@ -15,14 +14,14 @@ export const getRookMoves = (position: Position, gameState: GameState): Move[] =
 
   // Directions: horizontal (left, right) and vertical (up, down)
   const directions = [
-    { dx: -1, dy: 0 }, // left
-    { dx: 1, dy: 0 }, // right
-    { dx: 0, dy: -1 }, // up
-    { dx: 0, dy: 1 }, // down
+    { deltaCol: -1, deltaRow: 0 }, // left
+    { deltaCol: 1, deltaRow: 0 }, // right
+    { deltaCol: 0, deltaRow: -1 }, // up
+    { deltaCol: 0, deltaRow: 1 }, // down
   ];
 
   for (const direction of directions) {
-    moves.push(...getMovesInDirection(position, direction.dx, direction.dy, piece.color, board));
+    moves.push(...getMovesInDirection(position, direction.deltaCol, direction.deltaRow, piece.color, board));
   }
 
   return moves;
@@ -50,8 +49,8 @@ export const isValidRookMove = (from: Position, to: Position, gameState: GameSta
   if (!isValidPosition(to)) return false;
 
   // Check if the move is horizontal or vertical
-  const isHorizontal = from.y === to.y && from.x !== to.x;
-  const isVertical = from.x === to.x && from.y !== to.y;
+  const isHorizontal = from.row === to.row && from.col !== to.col;
+  const isVertical = from.col === to.col && from.row !== to.row;
   if (!isHorizontal && !isVertical) return false;
 
   // Check if the path is clear
@@ -62,4 +61,53 @@ export const isValidRookMove = (from: Position, to: Position, gameState: GameSta
   if (targetPiece && targetPiece.color === piece.color) return false;
 
   return true;
+};
+
+/**
+ * Get all moves in a specific direction
+ */
+const getMovesInDirection = (
+  position: Position,
+  deltaCol: number,
+  deltaRow: number,
+  pieceColor: Color,
+  board: Board
+): Move[] => {
+  const moves: Move[] = [];
+  let currentCol = position.col + deltaCol;
+  let currentRow = position.row + deltaRow;
+
+  while (true) {
+    // Check if position is valid (within board)
+    if (!isValidPosition({ col: currentCol, row: currentRow })) break;
+
+    const targetPosition: Position = { col: currentCol, row: currentRow };
+    const targetPiece = getPieceAt(targetPosition, board);
+
+    if (targetPiece === null) {
+      // Empty square - can move here
+      moves.push({
+        from: position,
+        to: targetPosition,
+        capture: false,
+      });
+    } else {
+      // Square has a piece
+      if (targetPiece.color !== pieceColor) {
+        // Opponent's piece - can capture
+        moves.push({
+          from: position,
+          to: targetPosition,
+          capture: true,
+        });
+      }
+      // Either way, can't move further in this direction
+      break;
+    }
+
+    currentCol += deltaCol;
+    currentRow += deltaRow;
+  }
+
+  return moves;
 };
