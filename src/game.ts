@@ -571,9 +571,6 @@ export const isStalemate = (gameState: GameState, color: Color): boolean => {
     // Find all legal moves for this piece
     const legalMoves = getLegalMoves(piecePosition, gameState);
 
-    // 디버깅용 로그 추가
-    console.log(`Found ${legalMoves.length} moves for piece at ${piecePosition.col},${piecePosition.row}`);
-
     // Try each legal move to see if it's valid (doesn't put king in check)
     for (const move of legalMoves) {
       // Create a clone of the board to test the move
@@ -596,14 +593,12 @@ export const isStalemate = (gameState: GameState, color: Color): boolean => {
 
       // Check if the king is in check after this move
       if (!isPlayerInCheck(tempGameState, color)) {
-        console.log(`Found valid move from ${piecePosition.col},${piecePosition.row} to ${move.to.col},${move.to.row}`);
         return false; // Found a legal move, not stalemate
       }
     }
   }
 
   // No legal moves available, it's stalemate
-  console.log('No legal moves found, stalemate detected');
   return true;
 };
 
