@@ -1,6 +1,6 @@
 import { expect, describe, it } from 'vitest';
 import { getLegalMoves } from './index';
-import { clearPosition, initBoard, placePiece } from '../board';
+import { clearBoard, clearPosition, initBoard, placePiece } from '../board';
 import { type GameState, Color, PieceType } from '../types';
 
 describe('getLegalMoves', () => {
@@ -78,11 +78,7 @@ describe('getLegalMoves', () => {
     const gameState = createGameState();
 
     // Clear the board
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        clearPosition(gameState.board, { col, row });
-      }
-    }
+    clearBoard(gameState.board);
 
     // Place a white king at e4
     placePiece(gameState.board, { col: 4, row: 3 }, { type: PieceType.KING, color: Color.WHITE });
@@ -104,11 +100,7 @@ describe('getLegalMoves', () => {
     const gameState = createGameState();
 
     // Clear the board
-    for (let row = 0; row < 8; row++) {
-      for (let col = 0; col < 8; col++) {
-        clearPosition(gameState.board, { col, row });
-      }
-    }
+    clearBoard(gameState.board);
 
     // Place a white bishop at e4
     placePiece(gameState.board, { col: 4, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });

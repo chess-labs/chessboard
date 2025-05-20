@@ -122,6 +122,20 @@ export const clearPosition = (board: Board, position: Position): boolean => {
 };
 
 /**
+ * Clear the entire chess board by setting all positions to null.
+ * @param board - The chess board to clear
+ * @returns The cleared board
+ */
+export const clearBoard = (board: Board): Board => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      board[row][col] = null;
+    }
+  }
+  return board;
+};
+
+/**
  * Check if all positions between two positions (from, to) are empty.
  * Works only on straight paths (horizontal, vertical, diagonal).
  */
