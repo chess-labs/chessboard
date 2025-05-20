@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getQueenMoves, isValidQueenMove } from './queen';
-import { initBoard, placePiece, clearPosition } from '../board';
+import { initBoard, placePiece, clearPosition, clearBoard } from '../board';
 import { Color, PieceType, type GameState } from '../types';
 
 describe('Queen moves', () => {
@@ -17,11 +17,7 @@ describe('Queen moves', () => {
     it('should allow horizontal moves like a rook', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen in the center of the board
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
@@ -44,11 +40,7 @@ describe('Queen moves', () => {
     it('should allow vertical moves like a rook', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen in the center of the board
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
@@ -71,11 +63,7 @@ describe('Queen moves', () => {
     it('should allow diagonal moves like a bishop', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen in the center of the board
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
@@ -108,11 +96,7 @@ describe('Queen moves', () => {
     it('should detect and stop at blocking pieces of the same color', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen and blocking pieces of the same color
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
       placePiece(board, { col: 3, row: 5 }, { type: PieceType.PAWN, color: Color.WHITE }); // vertical block
@@ -169,11 +153,7 @@ describe('Queen moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen and opponent pieces
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
       placePiece(board, { col: 3, row: 5 }, { type: PieceType.PAWN, color: Color.BLACK }); // vertical
@@ -237,11 +217,7 @@ describe('Queen moves', () => {
     it('should return true for valid horizontal, vertical, and diagonal moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
@@ -265,11 +241,7 @@ describe('Queen moves', () => {
     it('should return false for non-queen moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
@@ -283,11 +255,7 @@ describe('Queen moves', () => {
     it('should return false when path is blocked', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen and a blocking piece
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
       placePiece(board, { col: 3, row: 5 }, { type: PieceType.PAWN, color: Color.WHITE }); // vertical block
@@ -305,11 +273,7 @@ describe('Queen moves', () => {
     it('should return true when capturing an opponent piece', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place a queen and an opponent piece
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.QUEEN, color: Color.WHITE });
       placePiece(board, { col: 3, row: 5 }, { type: PieceType.PAWN, color: Color.BLACK });

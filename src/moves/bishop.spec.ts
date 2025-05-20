@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getBishopMoves, isValidBishopMove } from './bishop';
-import { clearPosition, initBoard, placePiece } from '../board';
+import { clearBoard, clearPosition, initBoard, placePiece } from '../board';
 import { Color, PieceType, type GameState } from '../types';
 
 describe('Bishop moves', () => {
@@ -17,11 +17,8 @@ describe('Bishop moves', () => {
     it('should allow diagonal moves in all directions', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop in the center of the board
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
 
@@ -79,11 +76,8 @@ describe('Bishop moves', () => {
     it('should detect and stop at blocking pieces of the same color', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop and a blocking piece of the same color
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
       placePiece(board, { col: 5, row: 5 }, { type: PieceType.PAWN, color: Color.WHITE });
@@ -114,11 +108,8 @@ describe('Bishop moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop and an opponent piece
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
       placePiece(board, { col: 5, row: 5 }, { type: PieceType.PAWN, color: Color.BLACK });
@@ -150,11 +141,8 @@ describe('Bishop moves', () => {
     it('should handle edge positions correctly', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop at the edge
       placePiece(board, { col: 0, row: 0 }, { type: PieceType.BISHOP, color: Color.WHITE });
 
@@ -182,11 +170,8 @@ describe('Bishop moves', () => {
     it('should return true for valid diagonal moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
 
@@ -202,11 +187,8 @@ describe('Bishop moves', () => {
     it('should return false for non-diagonal moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
 
@@ -223,11 +205,8 @@ describe('Bishop moves', () => {
     it('should return false when path is blocked', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop and a blocking piece
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
       placePiece(board, { col: 5, row: 5 }, { type: PieceType.PAWN, color: Color.WHITE });
@@ -241,11 +220,8 @@ describe('Bishop moves', () => {
     it('should return true when capturing an opponent piece', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
+
       // Place a bishop and an opponent piece
       placePiece(board, { col: 3, row: 3 }, { type: PieceType.BISHOP, color: Color.WHITE });
       placePiece(board, { col: 5, row: 5 }, { type: PieceType.PAWN, color: Color.BLACK });

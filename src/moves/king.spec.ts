@@ -1,8 +1,15 @@
-import { describe, it, expect } from 'vitest';
-import { getKingMoves, isValidKingMove } from './king';
-import { clearPosition, initBoard, placePiece } from '../board';
+import { describe, it, expect, beforeEach } from 'vitest';
+import { getKingMoves, isValidKingMove, canCastle } from './king';
+import { clearBoard, clearPosition, initBoard, placePiece } from '../board';
 import { Color, PieceType } from '../types';
 import type { GameState } from '../types';
+import { isPlayerInCheck } from '../game';
+import { vi } from 'vitest';
+
+// Mock isPlayerInCheck function from '../game'
+vi.mock('../game', () => ({
+  isPlayerInCheck: vi.fn().mockReturnValue(false),
+}));
 
 describe('King moves', () => {
   const createGameState = (board = initBoard()): GameState => ({
@@ -18,11 +25,7 @@ describe('King moves', () => {
     it('should return all valid one-square moves in open space', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king in the center
       const kingCol = 4;
       const kingRow = 4;
@@ -72,11 +75,7 @@ describe('King moves', () => {
     it('should respect board boundaries', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king in the corner
       placePiece(board, { col: 0, row: 0 }, { type: PieceType.KING, color: Color.WHITE });
 
@@ -103,11 +102,7 @@ describe('King moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king
       placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place an opponent piece
@@ -127,11 +122,7 @@ describe('King moves', () => {
     it('should not allow moving to squares occupied by the same color pieces', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king
       placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place a piece of the same color
@@ -158,11 +149,7 @@ describe('King moves', () => {
     it('should return true for valid one-square moves', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king
       placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
 
@@ -182,11 +169,7 @@ describe('King moves', () => {
     it('should return false for moves greater than one square', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king
       placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
 
@@ -206,11 +189,7 @@ describe('King moves', () => {
     it('should return false when trying to move to a square occupied by the same color piece', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; row++) {
-        for (let col = 0; col < 8; col++) {
-          clearPosition(board, { col, row });
-        }
-      }
+      clearBoard(board);
       // Place king
       placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place a piece of the same color
@@ -219,6 +198,230 @@ describe('King moves', () => {
       const gameState = createGameState(board);
 
       expect(isValidKingMove({ col: 4, row: 4 }, { col: 5, row: 4 }, gameState)).toBe(false);
+    });
+  });
+
+  // 새로운 캐슬링 테스트 추가
+  describe('castling', () => {
+    beforeEach(() => {
+      vi.mocked(isPlayerInCheck).mockReset().mockReturnValue(false);
+    });
+
+    it('should include kingside castling as a legal move when conditions are met', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook in initial position
+      const kingsideRookPos = { col: 7, row: 7 };
+      placePiece(board, kingsideRookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+      const moves = getKingMoves(kingPos, gameState);
+
+      // Should include castling move
+      expect(moves).toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should include queenside castling as a legal move when conditions are met', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white queenside rook in initial position
+      const queensideRookPos = { col: 0, row: 7 };
+      placePiece(board, queensideRookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+      const moves = getKingMoves(kingPos, gameState);
+
+      // Should include castling move
+      expect(moves).toContainEqual({
+        from: kingPos,
+        to: { col: 2, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should not allow castling if king has moved', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king that has moved
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: true });
+
+      // Place white kingside rook that hasn't moved
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+
+      // Should not be able to castle
+      expect(canCastle(kingPos, rookPos, gameState)).toBe(false);
+
+      // Kingside castling should not be in legal moves
+      const moves = getKingMoves(kingPos, gameState);
+      expect(moves).not.toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should not allow castling if rook has moved', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king that hasn't moved
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook that has moved
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: true });
+
+      const gameState = createGameState(board);
+
+      // Should not be able to castle
+      expect(canCastle(kingPos, rookPos, gameState)).toBe(false);
+
+      // Kingside castling should not be in legal moves
+      const moves = getKingMoves(kingPos, gameState);
+      expect(moves).not.toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should not allow castling when pieces are between king and rook', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook in initial position
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      // Place bishop between king and rook
+      placePiece(board, { col: 5, row: 7 }, { type: PieceType.BISHOP, color: Color.WHITE });
+
+      const gameState = createGameState(board);
+
+      // Should not be able to castle
+      expect(canCastle(kingPos, rookPos, gameState)).toBe(false);
+
+      // Kingside castling should not be in legal moves
+      const moves = getKingMoves(kingPos, gameState);
+      expect(moves).not.toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should not allow castling when king is in check', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook in initial position
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+
+      // Mock that king is in check
+      vi.mocked(isPlayerInCheck).mockReturnValue(true);
+
+      // Should not be able to castle
+      expect(canCastle(kingPos, rookPos, gameState)).toBe(false);
+
+      // Kingside castling should not be in legal moves
+      const moves = getKingMoves(kingPos, gameState);
+      expect(moves).not.toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should not allow castling when king would pass through a square under attack', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook in initial position
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+
+      // Mock that king would be in check when moving through f1 (the square it passes)
+      vi.mocked(isPlayerInCheck).mockImplementation((gs, color) => {
+        // We're examining a temporary board state with king at f1 (col 5)
+        if (gs.board[7][5] && gs.board[7][5]?.type === PieceType.KING) {
+          return true;
+        }
+        return false;
+      });
+
+      // Should not be able to castle
+      expect(canCastle(kingPos, rookPos, gameState)).toBe(false);
+
+      // Kingside castling should not be in legal moves
+      const moves = getKingMoves(kingPos, gameState);
+      expect(moves).not.toContainEqual({
+        from: kingPos,
+        to: { col: 6, row: 7 },
+        special: 'castling',
+      });
+    });
+
+    it('should correctly validate a castling move in isValidKingMove', () => {
+      const board = initBoard();
+      // Clear the board
+      clearBoard(board);
+
+      // Place white king in initial position
+      const kingPos = { col: 4, row: 7 };
+      placePiece(board, kingPos, { type: PieceType.KING, color: Color.WHITE, hasMoved: false });
+
+      // Place white kingside rook in initial position
+      const rookPos = { col: 7, row: 7 };
+      placePiece(board, rookPos, { type: PieceType.ROOK, color: Color.WHITE, hasMoved: false });
+
+      const gameState = createGameState(board);
+
+      // Should be valid to castle kingside
+      expect(isValidKingMove(kingPos, { col: 6, row: 7 }, gameState)).toBe(true);
     });
   });
 });
