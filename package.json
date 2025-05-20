@@ -9,11 +9,11 @@
   ],
   "scripts": {
     "build": "tsc",
+    "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui",
-    "prepare": "npm run build"
+    "test:ui": "vitest --ui"
   },
   "keywords": [
     "chess",
