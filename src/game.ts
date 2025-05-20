@@ -1,4 +1,13 @@
-import { type Board, type GameState, type Move, type Position, type Piece, Color, type SpecialMove } from './types';
+import {
+  type Board,
+  type GameState,
+  type Move,
+  type Position,
+  type Piece,
+  Color,
+  PieceType,
+  type SpecialMove,
+} from './types';
 import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece, initBoard } from './board';
 import { getLegalMoves } from './moves';
 import { arePositionsEqual } from './helper';
@@ -228,8 +237,51 @@ export const getMoveHistory = (
  * @returns True if the player is in check, false otherwise
  */
 export const isPlayerInCheck = (gameState: GameState, color: Color): boolean => {
-  // For now, this is a placeholder that just returns the isCheck value
-  // A proper implementation would check if the king of the specified color
-  // is under attack by any opponent's piece
-  return gameState.isCheck && gameState.currentTurn === color;
+  // Find the king's position for the specified color
+  const kingPosition = findKingPosition(gameState, color);
+  if (!kingPosition) return false; // If no king found (shouldn't happen in normal chess)
+
+  // Check if any opponent piece can attack the king's position
+  const opponentColor = color === Color.WHITE ? Color.BLACK : Color.WHITE;
+  return canColorAttackPosition(gameState, opponentColor, kingPosition);
+};
+
+/**
+ * Find the position of a king of specified color
+ * @param gameState - Current game state
+ * @param color - Color of the king to find
+ * @returns Position of the king or null if not found
+ */
+const findKingPosition = (gameState: GameState, color: Color): Position | null => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.type === PieceType.KING && piece.color === color) {
+        return { row, col };
+      }
+    }
+  }
+  return null; // King not found (shouldn't happen in a valid chess game)
+};
+
+/**
+ * Check if any piece of specified color can attack a position
+ * @param gameState - Current game state
+ * @param color - Color of the attacking pieces
+ * @param position - Position to check if it can be attacked
+ * @returns True if the position can be attacked, false otherwise
+ */
+const canColorAttackPosition = (gameState: GameState, color: Color, position: Position): boolean => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === color) {
+        // Check if this piece can move to the king's position
+        if (isValidMove({ row, col }, position, gameState)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 };
