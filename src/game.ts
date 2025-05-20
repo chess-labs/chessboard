@@ -322,9 +322,9 @@ export const isCheckmate = (gameState: GameState, color: Color): boolean => {
 };
 
 /**
- * Update the game state to reflect check and checkmate status
+ * Update the game state to reflect check and checkmate status for the opponent
  * @param gameState - Current game state
- * @returns Updated game state with check and checkmate flags set
+ * @returns Updated game state with isCheck and isCheckmate flags set for the opponent's status
  */
 export const updateCheckStatus = (gameState: GameState): GameState => {
   const currentPlayer = gameState.currentTurn;
