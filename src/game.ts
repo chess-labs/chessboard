@@ -1,6 +1,7 @@
 import { type Board, type GameState, type Move, type Position, type Piece, Color, type SpecialMove } from './types';
 import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece } from './board';
 import { getLegalMoves } from './moves';
+import { arePositionsEqual } from './helper';
 
 /**
  * Moves a piece on the chess board following chess rules.
@@ -30,7 +31,7 @@ export const movePiece = (from: Position, to: Position, gameState: GameState): G
   const legalMoves = getLegalMoves(from, gameState);
 
   // Find if the requested move is in the list of legal moves
-  const validMove = legalMoves.find((move) => move.to.col === to.col && move.to.row === to.row);
+  const validMove = legalMoves.find((move) => arePositionsEqual(move.to, to));
 
   // If the move is not legal, return null
   if (!validMove) {
@@ -132,5 +133,5 @@ export const isValidMove = (from: Position, to: Position, gameState: GameState):
   const legalMoves = getLegalMoves(from, gameState);
 
   // Check if the requested move is in the list of legal moves
-  return legalMoves.some((move) => move.to.col === to.col && move.to.row === to.row);
+  return legalMoves.some((move) => arePositionsEqual(move.to, to));
 };
