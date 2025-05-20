@@ -1,5 +1,13 @@
 import { expect, describe, it } from 'vitest';
-import { movePiece, isValidMove } from './game';
+import {
+  movePiece,
+  isValidMove,
+  initGameState,
+  switchTurn,
+  addMoveToHistory,
+  getCurrentPlayer,
+  getMoveHistory,
+} from './game';
 import { initBoard } from './board';
 import { Color, PieceType, type GameState } from './types';
 
@@ -196,5 +204,74 @@ describe('Game functions', () => {
       // Original game state should be unchanged
       expect(JSON.stringify(gameState.board)).toBe(originalBoard);
     });
+  });
+});
+
+describe('Game State Management', () => {
+  it('initGameState should create a new game with white to move first', () => {
+    const gameState = initGameState();
+    expect(gameState.currentTurn).toBe(Color.WHITE);
+    expect(gameState.moveHistory).toHaveLength(0);
+    expect(gameState.isCheck).toBe(false);
+    expect(gameState.isCheckmate).toBe(false);
+    expect(gameState.isStalemate).toBe(false);
+  });
+
+  it('switchTurn should change the current player', () => {
+    const gameState = initGameState();
+    expect(gameState.currentTurn).toBe(Color.WHITE);
+
+    const newGameState = switchTurn(gameState);
+    expect(newGameState.currentTurn).toBe(Color.BLACK);
+
+    const finalGameState = switchTurn(newGameState);
+    expect(finalGameState.currentTurn).toBe(Color.WHITE);
+  });
+
+  it('addMoveToHistory should add a move to history', () => {
+    let gameState = initGameState();
+    expect(gameState.moveHistory).toHaveLength(0);
+
+    const from = { row: 6, col: 4 };
+    const to = { row: 4, col: 4 };
+    const piece = { type: PieceType.PAWN, color: Color.WHITE };
+
+    gameState = addMoveToHistory(gameState, from, to, piece);
+    expect(gameState.moveHistory).toHaveLength(1);
+    expect(gameState.moveHistory[0].from).toEqual(from);
+    expect(gameState.moveHistory[0].to).toEqual(to);
+    expect(gameState.moveHistory[0].piece).toEqual(piece);
+  });
+
+  it('getCurrentPlayer should return the current player color', () => {
+    const gameState = initGameState();
+    expect(getCurrentPlayer(gameState)).toBe(Color.WHITE);
+
+    const newGameState = switchTurn(gameState);
+    expect(getCurrentPlayer(newGameState)).toBe(Color.BLACK);
+  });
+
+  it('getMoveHistory should return a copy of the move history', () => {
+    let gameState = initGameState();
+
+    const from = { row: 6, col: 4 };
+    const to = { row: 4, col: 4 };
+    const piece = { type: PieceType.PAWN, color: Color.WHITE };
+
+    gameState = addMoveToHistory(gameState, from, to, piece);
+
+    const history = getMoveHistory(gameState);
+    expect(history).toHaveLength(1);
+    expect(history[0].from).toEqual(from);
+
+    // Verify it's a copy by modifying and checking original is unchanged
+    history.push({
+      from: { row: 0, col: 0 },
+      to: { row: 1, col: 1 },
+      piece: { type: PieceType.ROOK, color: Color.BLACK },
+    });
+
+    expect(history).toHaveLength(2);
+    expect(gameState.moveHistory).toHaveLength(1);
   });
 });

@@ -1,5 +1,14 @@
-import { type Board, type GameState, type Move, type Position, type Piece, Color, type SpecialMove } from './types';
-import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece } from './board';
+import {
+  type Board,
+  type GameState,
+  type Move,
+  type Position,
+  type Piece,
+  Color,
+  PieceType,
+  type SpecialMove,
+} from './types';
+import { clearPosition, cloneBoard, getPieceAt, isValidPosition, placePiece, initBoard } from './board';
 import { getLegalMoves } from './moves';
 import { arePositionsEqual } from './helper';
 
@@ -134,4 +143,145 @@ export const isValidMove = (from: Position, to: Position, gameState: GameState):
 
   // Check if the requested move is in the list of legal moves
   return legalMoves.some((move) => arePositionsEqual(move.to, to));
+};
+
+/**
+ * Initialize a new game state with the standard chess setup
+ * @returns Initial game state with pieces in starting positions
+ */
+export const initGameState = (): GameState => {
+  return {
+    board: initBoard(),
+    currentTurn: Color.WHITE, // White always moves first in standard chess
+    moveHistory: [],
+    isCheck: false,
+    isCheckmate: false,
+    isStalemate: false,
+  };
+};
+
+/**
+ * Change the current turn from one player to another
+ * @param gameState - Current game state
+ * @returns New game state with updated current player
+ */
+export const switchTurn = (gameState: GameState): GameState => {
+  return {
+    ...gameState,
+    currentTurn: gameState.currentTurn === Color.WHITE ? Color.BLACK : Color.WHITE,
+  };
+};
+
+/**
+ * Add a move to the game history
+ * @param gameState - Current game state
+ * @param from - Starting position of the move
+ * @param to - Ending position of the move
+ * @param piece - The piece that was moved
+ * @param captured - Optional captured piece
+ * @param special - Optional special move type
+ * @returns New game state with updated move history
+ */
+export const addMoveToHistory = (
+  gameState: GameState,
+  from: Position,
+  to: Position,
+  piece: Piece,
+  captured?: Piece,
+  special?: SpecialMove
+): GameState => {
+  const moveHistoryEntry = {
+    from,
+    to,
+    piece: { ...piece },
+    captured,
+    special,
+  };
+
+  return {
+    ...gameState,
+    moveHistory: [...gameState.moveHistory, moveHistoryEntry],
+  };
+};
+
+/**
+ * Get the current player's color
+ * @param gameState - Current game state
+ * @returns The color of the current player
+ */
+export const getCurrentPlayer = (gameState: GameState): Color => {
+  return gameState.currentTurn;
+};
+
+/**
+ * Get the move history
+ * @param gameState - Current game state
+ * @returns Array of move history entries
+ */
+export const getMoveHistory = (
+  gameState: GameState
+): Array<{
+  from: Position;
+  to: Position;
+  piece: Piece;
+  captured?: Piece;
+  special?: SpecialMove;
+}> => {
+  return [...gameState.moveHistory];
+};
+
+/**
+ * Check if a specific player is in check
+ * @param gameState - Current game state
+ * @param color - Color of the player to check
+ * @returns True if the player is in check, false otherwise
+ */
+export const isPlayerInCheck = (gameState: GameState, color: Color): boolean => {
+  // Find the king's position for the specified color
+  const kingPosition = findKingPosition(gameState, color);
+  if (!kingPosition) return false; // If no king found (shouldn't happen in normal chess)
+
+  // Check if any opponent piece can attack the king's position
+  const opponentColor = color === Color.WHITE ? Color.BLACK : Color.WHITE;
+  return canColorAttackPosition(gameState, opponentColor, kingPosition);
+};
+
+/**
+ * Find the position of a king of specified color
+ * @param gameState - Current game state
+ * @param color - Color of the king to find
+ * @returns Position of the king or null if not found
+ */
+const findKingPosition = (gameState: GameState, color: Color): Position | null => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.type === PieceType.KING && piece.color === color) {
+        return { row, col };
+      }
+    }
+  }
+  return null; // King not found (shouldn't happen in a valid chess game)
+};
+
+/**
+ * Check if any piece of specified color can attack a position
+ * @param gameState - Current game state
+ * @param color - Color of the attacking pieces
+ * @param position - Position to check if it can be attacked
+ * @returns True if the position can be attacked, false otherwise
+ */
+const canColorAttackPosition = (gameState: GameState, color: Color, position: Position): boolean => {
+  for (let row = 0; row < 8; row++) {
+    for (let col = 0; col < 8; col++) {
+      const piece = gameState.board[row][col];
+      if (piece && piece.color === color) {
+        // Check if this piece can move to the king's position
+        if (isValidMove({ row, col }, position, gameState)) {
+          return true;
+        }
+      }
+    }
+  }
+  return false;
 };
