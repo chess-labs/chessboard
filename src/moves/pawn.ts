@@ -34,7 +34,7 @@ export const getPawnMoves = (position: Position, gameState: GameState): Move[] =
  */
 const getForwardMoves = (position: Position, direction: number, startingRank: number, board: Board): Move[] => {
   const moves: Move[] = [];
-  const oneSquareForward: Position = { x: position.x, y: position.y + direction };
+  const oneSquareForward: Position = { col: position.col, row: position.row + direction };
 
   // Check one square forward
   if (isValidPosition(oneSquareForward) && !getPieceAt(oneSquareForward, board)) {
@@ -44,8 +44,8 @@ const getForwardMoves = (position: Position, direction: number, startingRank: nu
     });
 
     // Check two squares forward from starting position
-    if (position.y === startingRank) {
-      const twoSquaresForward: Position = { x: position.x, y: position.y + direction * 2 };
+    if (position.row === startingRank) {
+      const twoSquaresForward: Position = { col: position.col, row: position.row + direction * 2 };
       if (isValidPosition(twoSquaresForward) && !getPieceAt(twoSquaresForward, board)) {
         moves.push({
           from: position,
@@ -65,8 +65,8 @@ const getForwardMoves = (position: Position, direction: number, startingRank: nu
 const getCaptureMoves = (position: Position, direction: number, color: Color, board: Board): Move[] => {
   const moves: Move[] = [];
   const capturePositions: Position[] = [
-    { x: position.x - 1, y: position.y + direction }, // Left capture
-    { x: position.x + 1, y: position.y + direction }, // Right capture
+    { col: position.col - 1, row: position.row + direction }, // Left capture
+    { col: position.col + 1, row: position.row + direction }, // Right capture
   ];
 
   for (const capturePos of capturePositions) {
@@ -102,15 +102,15 @@ const getEnPassantMoves = (position: Position, direction: number, color: Color, 
     lastMove.piece.type === PieceType.PAWN &&
     lastMove.piece.color !== color &&
     lastMove.special === 'two-square-advance' &&
-    Math.abs(lastMove.from.y - lastMove.to.y) === 2 &&
-    position.y === lastMove.to.y
+    Math.abs(lastMove.from.row - lastMove.to.row) === 2 &&
+    position.row === lastMove.to.row
   ) {
     // Check if our pawn is adjacent to the opponent's pawn
-    const xDiff = lastMove.to.x - position.x;
-    if (Math.abs(xDiff) === 1) {
+    const colDiff = lastMove.to.col - position.col;
+    if (Math.abs(colDiff) === 1) {
       moves.push({
         from: position,
-        to: { x: lastMove.to.x, y: position.y + direction },
+        to: { col: lastMove.to.col, row: position.row + direction },
         capture: true,
         special: 'en-passant',
         capturedPiecePosition: lastMove.to, // Add this to help with move execution
@@ -126,5 +126,5 @@ const getEnPassantMoves = (position: Position, direction: number, color: Color, 
  */
 export const isValidPawnMove = (from: Position, to: Position, gameState: GameState): boolean => {
   const possibleMoves = getPawnMoves(from, gameState);
-  return possibleMoves.some((move) => move.to.x === to.x && move.to.y === to.y);
+  return possibleMoves.some((move) => move.to.col === to.col && move.to.row === to.row);
 };

@@ -10,36 +10,36 @@ export const initBoard = (): Board => {
     .map(() => Array(8).fill(null));
 
   // Place pawns
-  for (let i = 0; i < 8; i++) {
-    board[1][i] = { type: PieceType.PAWN, color: Color.BLACK };
-    board[6][i] = { type: PieceType.PAWN, color: Color.WHITE };
+  for (let col = 0; col < 8; col++) {
+    placePiece(board, { col, row: 1 }, { type: PieceType.PAWN, color: Color.BLACK });
+    placePiece(board, { col, row: 6 }, { type: PieceType.PAWN, color: Color.WHITE });
   }
 
   // Place rooks
-  board[0][0] = { type: PieceType.ROOK, color: Color.BLACK };
-  board[0][7] = { type: PieceType.ROOK, color: Color.BLACK };
-  board[7][0] = { type: PieceType.ROOK, color: Color.WHITE };
-  board[7][7] = { type: PieceType.ROOK, color: Color.WHITE };
+  placePiece(board, { col: 0, row: 0 }, { type: PieceType.ROOK, color: Color.BLACK });
+  placePiece(board, { col: 7, row: 0 }, { type: PieceType.ROOK, color: Color.BLACK });
+  placePiece(board, { col: 0, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
+  placePiece(board, { col: 7, row: 7 }, { type: PieceType.ROOK, color: Color.WHITE });
 
   // Place knights
-  board[0][1] = { type: PieceType.KNIGHT, color: Color.BLACK };
-  board[0][6] = { type: PieceType.KNIGHT, color: Color.BLACK };
-  board[7][1] = { type: PieceType.KNIGHT, color: Color.WHITE };
-  board[7][6] = { type: PieceType.KNIGHT, color: Color.WHITE };
+  placePiece(board, { col: 1, row: 0 }, { type: PieceType.KNIGHT, color: Color.BLACK });
+  placePiece(board, { col: 6, row: 0 }, { type: PieceType.KNIGHT, color: Color.BLACK });
+  placePiece(board, { col: 1, row: 7 }, { type: PieceType.KNIGHT, color: Color.WHITE });
+  placePiece(board, { col: 6, row: 7 }, { type: PieceType.KNIGHT, color: Color.WHITE });
 
   // Place bishops
-  board[0][2] = { type: PieceType.BISHOP, color: Color.BLACK };
-  board[0][5] = { type: PieceType.BISHOP, color: Color.BLACK };
-  board[7][2] = { type: PieceType.BISHOP, color: Color.WHITE };
-  board[7][5] = { type: PieceType.BISHOP, color: Color.WHITE };
+  placePiece(board, { col: 2, row: 0 }, { type: PieceType.BISHOP, color: Color.BLACK });
+  placePiece(board, { col: 5, row: 0 }, { type: PieceType.BISHOP, color: Color.BLACK });
+  placePiece(board, { col: 2, row: 7 }, { type: PieceType.BISHOP, color: Color.WHITE });
+  placePiece(board, { col: 5, row: 7 }, { type: PieceType.BISHOP, color: Color.WHITE });
 
   // Place queens
-  board[0][3] = { type: PieceType.QUEEN, color: Color.BLACK };
-  board[7][3] = { type: PieceType.QUEEN, color: Color.WHITE };
+  placePiece(board, { col: 3, row: 0 }, { type: PieceType.QUEEN, color: Color.BLACK });
+  placePiece(board, { col: 3, row: 7 }, { type: PieceType.QUEEN, color: Color.WHITE });
 
   // Place kings
-  board[0][4] = { type: PieceType.KING, color: Color.BLACK };
-  board[7][4] = { type: PieceType.KING, color: Color.WHITE };
+  placePiece(board, { col: 4, row: 0 }, { type: PieceType.KING, color: Color.BLACK });
+  placePiece(board, { col: 4, row: 7 }, { type: PieceType.KING, color: Color.WHITE });
 
   return board;
 };
@@ -48,7 +48,7 @@ export const initBoard = (): Board => {
  * Check if the position is within the chess board.
  */
 export const isValidPosition = (position: Position): boolean => {
-  return position.x >= 0 && position.x < 8 && position.y >= 0 && position.y < 8;
+  return position.col >= 0 && position.col < 8 && position.row >= 0 && position.row < 8;
 };
 
 /**
@@ -60,7 +60,65 @@ export const getPieceAt = (position: Position, board: Board): Piece | null => {
     return null;
   }
 
-  return board[position.y][position.x];
+  return board[position.row][position.col];
+};
+
+/**
+ * Place a piece at the specified position on the board.
+ * Returns true if successful, false if the position is invalid.
+ */
+export const placePiece = (board: Board, position: Position, piece: Piece): boolean => {
+  if (!isValidPosition(position)) {
+    return false;
+  }
+
+  board[position.row][position.col] = piece;
+  return true;
+};
+
+/**
+ * Remove a piece from the specified position on the board.
+ * Returns the removed piece if successful, null if the position is invalid or empty.
+ */
+export const removePiece = (board: Board, position: Position): Piece | null => {
+  if (!isValidPosition(position)) {
+    return null;
+  }
+
+  const piece = board[position.row][position.col];
+  board[position.row][position.col] = null;
+  return piece;
+};
+
+/**
+ * Move a piece from one position to another.
+ * Returns the captured piece (if any) or true if the move was successful,
+ * false if the source position is invalid or empty.
+ */
+export const movePiece = (board: Board, from: Position, to: Position): Piece | boolean => {
+  const piece = getPieceAt(from, board);
+  if (!piece || !isValidPosition(to)) {
+    return false;
+  }
+
+  const capturedPiece = removePiece(board, to);
+  removePiece(board, from);
+  placePiece(board, to, piece);
+
+  return capturedPiece || true;
+};
+
+/**
+ * Clear a position on the board by setting it to null.
+ * Returns true if successful, false if the position is invalid.
+ */
+export const clearPosition = (board: Board, position: Position): boolean => {
+  if (!isValidPosition(position)) {
+    return false;
+  }
+
+  board[position.row][position.col] = null;
+  return true;
 };
 
 /**
@@ -68,29 +126,29 @@ export const getPieceAt = (position: Position, board: Board): Piece | null => {
  * Works only on straight paths (horizontal, vertical, diagonal).
  */
 export const isPathClear = (from: Position, to: Position, board: Board): boolean => {
-  const dx = Math.sign(to.x - from.x);
-  const dy = Math.sign(to.y - from.y);
+  const deltaCol = Math.sign(to.col - from.col);
+  const deltaRow = Math.sign(to.row - from.row);
 
-  if (dx === 0 && dy === 0) return true; // Same position
+  if (deltaCol === 0 && deltaRow === 0) return true; // Same position
 
   // Validate that the path is straight (horizontal, vertical, or diagonal)
-  const xDiff = Math.abs(to.x - from.x);
-  const yDiff = Math.abs(to.y - from.y);
-  const isStraightPath = dx === 0 || dy === 0 || xDiff === yDiff;
+  const xDiff = Math.abs(to.col - from.col);
+  const yDiff = Math.abs(to.row - from.row);
+  const isStraightPath = deltaCol === 0 || deltaRow === 0 || xDiff === yDiff;
   if (!isStraightPath) {
     throw new Error('Path must be straight (horizontal, vertical, or diagonal)');
   }
 
-  let x = from.x + dx;
-  let y = from.y + dy;
+  let col = from.col + deltaCol;
+  let row = from.row + deltaRow;
 
-  while (x !== to.x || y !== to.y) {
-    if (board[y][x] !== null) {
+  while (col !== to.col || row !== to.row) {
+    if (board[row][col] !== null) {
       return false; // There is a piece in the path
     }
 
-    x += dx;
-    y += dy;
+    col += deltaCol;
+    row += deltaRow;
   }
 
   return true;
@@ -107,7 +165,7 @@ export const algebraicToPosition = (algebraic: string): Position => {
   const file = algebraic.charCodeAt(0) - 'a'.charCodeAt(0);
   const rank = 8 - Number.parseInt(algebraic[1], 10);
 
-  return { x: file, y: rank };
+  return { col: file, row: rank };
 };
 
 /**
@@ -127,8 +185,8 @@ export const positionToAlgebraic = (position: Position): string => {
     throw new Error('Invalid position. Coordinates must be between 0 and 7.');
   }
 
-  const file = String.fromCharCode('a'.charCodeAt(0) + position.x);
-  const rank = 8 - position.y;
+  const file = String.fromCharCode('a'.charCodeAt(0) + position.col);
+  const rank = 8 - position.row;
 
   return `${file}${rank}`;
 };
