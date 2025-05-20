@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getKingMoves, isValidKingMove } from './king';
-import { clearPosition, initBoard } from '../board';
+import { clearPosition, initBoard, placePiece } from '../board';
 import { Color, PieceType } from '../types';
 import type { GameState } from '../types';
 
@@ -18,15 +18,15 @@ describe('King moves', () => {
     it('should return all valid one-square moves in open space', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king in the center
       const kingCol = 4;
       const kingRow = 4;
-      board[kingRow][kingCol] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: kingCol, row: kingRow }, { type: PieceType.KING, color: Color.WHITE });
 
       const gameState = createGameState(board);
       const moves = getKingMoves({ col: kingCol, row: kingRow }, gameState);
@@ -72,13 +72,13 @@ describe('King moves', () => {
     it('should respect board boundaries', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king in the corner
-      board[0][0] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 0, row: 0 }, { type: PieceType.KING, color: Color.WHITE });
 
       const gameState = createGameState(board);
       const moves = getKingMoves({ col: 0, row: 0 }, gameState);
@@ -103,15 +103,15 @@ describe('King moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king
-      board[4][4] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place an opponent piece
-      board[4][5] = { type: PieceType.PAWN, color: Color.BLACK };
+      placePiece(board, { col: 5, row: 4 }, { type: PieceType.PAWN, color: Color.BLACK });
 
       const gameState = createGameState(board);
       const moves = getKingMoves({ col: 4, row: 4 }, gameState);
@@ -127,15 +127,15 @@ describe('King moves', () => {
     it('should not allow moving to squares occupied by the same color pieces', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king
-      board[4][4] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place a piece of the same color
-      board[4][5] = { type: PieceType.PAWN, color: Color.WHITE };
+      placePiece(board, { col: 5, row: 4 }, { type: PieceType.PAWN, color: Color.WHITE });
 
       const gameState = createGameState(board);
       const moves = getKingMoves({ col: 4, row: 4 }, gameState);
@@ -158,13 +158,13 @@ describe('King moves', () => {
     it('should return true for valid one-square moves', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king
-      board[4][4] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
 
       const gameState = createGameState(board);
 
@@ -182,13 +182,13 @@ describe('King moves', () => {
     it('should return false for moves greater than one square', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king
-      board[4][4] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
 
       const gameState = createGameState(board);
 
@@ -206,15 +206,15 @@ describe('King moves', () => {
     it('should return false when trying to move to a square occupied by the same color piece', () => {
       const board = initBoard();
       // Clear the board
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
       // Place king
-      board[4][4] = { type: PieceType.KING, color: Color.WHITE };
+      placePiece(board, { col: 4, row: 4 }, { type: PieceType.KING, color: Color.WHITE });
       // Place a piece of the same color
-      board[4][5] = { type: PieceType.PAWN, color: Color.WHITE };
+      placePiece(board, { col: 5, row: 4 }, { type: PieceType.PAWN, color: Color.WHITE });
 
       const gameState = createGameState(board);
 

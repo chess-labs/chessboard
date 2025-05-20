@@ -17,8 +17,8 @@ describe('Queen moves', () => {
     it('should allow horizontal moves like a rook', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -44,8 +44,8 @@ describe('Queen moves', () => {
     it('should allow vertical moves like a rook', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -71,8 +71,8 @@ describe('Queen moves', () => {
     it('should allow diagonal moves like a bishop', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -108,8 +108,8 @@ describe('Queen moves', () => {
     it('should detect and stop at blocking pieces of the same color', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -169,8 +169,8 @@ describe('Queen moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -237,8 +237,8 @@ describe('Queen moves', () => {
     it('should return true for valid horizontal, vertical, and diagonal moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -265,8 +265,8 @@ describe('Queen moves', () => {
     it('should return false for non-queen moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -283,8 +283,8 @@ describe('Queen moves', () => {
     it('should return false when path is blocked', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -305,8 +305,8 @@ describe('Queen moves', () => {
     it('should return true when capturing an opponent piece', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let row = 0; row < 8; ++row) {
-        for (let col = 0; col < 8; ++col) {
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
           clearPosition(board, { col, row });
         }
       }

@@ -46,11 +46,11 @@ describe('Rook moves', () => {
     it('should allow vertical moves', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let i = 0; i < 8; i++) {
-        board[i][0] = null;
+      for (let row = 0; row < 8; row++) {
+        clearPosition(board, { col: 0, row });
       }
       // Place a rook on an open space
-      board[3][0] = { type: PieceType.ROOK, color: Color.BLACK };
+      placePiece(board, { col: 0, row: 3 }, { type: PieceType.ROOK, color: Color.BLACK });
 
       const gameState = createGameState(board);
       const moves = getRookMoves({ col: 0, row: 3 }, gameState);
@@ -70,7 +70,7 @@ describe('Rook moves', () => {
     it('should detect and stop at blocking pieces of the same color', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let col = 0; col < 8; ++col) {
+      for (let col = 0; col < 8; col++) {
         clearPosition(board, { col, row: 7 });
       }
       // Place a rook and a blocking piece of the same color
@@ -106,7 +106,7 @@ describe('Rook moves', () => {
     it('should allow capturing opponent pieces', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let col = 0; col < 8; ++col) {
+      for (let col = 0; col < 8; col++) {
         clearPosition(board, { col, row: 7 });
       }
       // Place a rook and an opponent piece
@@ -139,7 +139,7 @@ describe('Rook moves', () => {
     it('should return true for valid horizontal moves', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let col = 0; col < 8; ++col) {
+      for (let col = 0; col < 8; col++) {
         clearPosition(board, { col, row: 7 });
       }
       // Place a rook
@@ -152,7 +152,7 @@ describe('Rook moves', () => {
     it('should return true for valid vertical moves', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let row = 0; row < 8; ++row) {
+      for (let row = 0; row < 8; row++) {
         clearPosition(board, { col: 0, row });
       }
       // Place a rook
@@ -165,10 +165,10 @@ describe('Rook moves', () => {
     it('should return false for diagonal moves', () => {
       const board = initBoard();
       // Clear pieces to make space
-      for (let col = 0; col < 8; ++col) {
+      for (let col = 0; col < 8; col++) {
         clearPosition(board, { col, row: 7 });
       }
-      for (let row = 0; row < 8; ++row) {
+      for (let row = 0; row < 8; row++) {
         clearPosition(board, { col: 0, row });
       }
       // Place a rook

@@ -202,9 +202,9 @@ describe('Bishop moves', () => {
     it('should return false for non-diagonal moves', () => {
       const board = initBoard();
       // Clear the board to make space for testing
-      for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-          clearPosition(board, { col: x, row: y });
+      for (let row = 0; row < 8; row++) {
+        for (let col = 0; col < 8; col++) {
+          clearPosition(board, { col, row });
         }
       }
       // Place a bishop

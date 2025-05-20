@@ -103,8 +103,8 @@ describe('Knight moves', () => {
     it('should return true for valid L-shaped moves', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -127,8 +127,8 @@ describe('Knight moves', () => {
     it('should return false for non-L-shaped moves', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -147,8 +147,8 @@ describe('Knight moves', () => {
     it('should return false when trying to capture own piece', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -165,8 +165,8 @@ describe('Knight moves', () => {
     it('should return true when capturing an opponent piece', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -183,8 +183,8 @@ describe('Knight moves', () => {
     it('should return false when source position does not have a knight', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
@@ -200,8 +200,8 @@ describe('Knight moves', () => {
     it('should return false for empty source position', () => {
       const board = initBoard();
       // Clear some spaces
-      for (let row = 2; row < 6; ++row) {
-        for (let col = 2; col < 6; ++col) {
+      for (let row = 2; row < 6; row++) {
+        for (let col = 2; col < 6; col++) {
           clearPosition(board, { col, row });
         }
       }
