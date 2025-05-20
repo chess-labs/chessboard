@@ -59,8 +59,7 @@ export const getKingMoves = (position: Position, gameState: GameState): Move[] =
   }
 
   // Add castling moves
-  const king = board[row][col];
-  if (king && !king.hasMoved) {
+  if (kingPiece && !kingPiece.hasMoved) {
     // Kingside castling
     const kingsideRookPos = { col: 7, row };
     if (canCastle(position, kingsideRookPos, gameState)) {
