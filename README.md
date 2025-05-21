@@ -22,7 +22,7 @@ npm install ...
 ## Usage Example
 
 ```typescript
-import { initBoard, getLegalMoves, movePiece } from 'ts-chess-engine';
+import { initBoard, getLegalMoves, movePiece } from '@chess-labs/core';
 
 const board = initBoard();
 const moves = getLegalMoves({ row: 6, col: 1 }, board); // Example: White pawn at b2
