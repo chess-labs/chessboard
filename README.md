@@ -1,6 +1,6 @@
 # Chess Core
 
-A lightweight, framework-agnostic chess engine written in TypeScript.
+A minimal, standalone chess logic implementation in TypeScript.
 
 ## Features
 
