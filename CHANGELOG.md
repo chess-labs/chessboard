@@ -29,6 +29,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: update changelog for v1.0.3 (872354d)
 - docs: update changelog for v1.0.3 (5b062d3)
 - docs: update changelog for v1.0.3 (bb6f2b7)
+- docs: update changelog for v1.0.3 (9c4e837)
+
+## [1.0.3] - 2025-05-24
+
+### Changes
+- docs: update changelog for v1.0.3 (ea19970)
+- docs: update changelog for v1.0.3 (cae5753)
+- docs: update changelog for v1.0.3 (51230c7)
+- docs: update changelog for v1.0.3 (6e6e1a2)
+- docs: update changelog for v1.0.3 (75c4208)
+- docs: update changelog for v1.0.3 (9fe8ec0)
+- docs: update changelog for v1.0.3 (841aaff)
+- docs: update changelog for v1.0.3 (86889ff)
+- docs: update changelog for v1.0.3 (163d314)
+- docs: update changelog for v1.0.3 (a760a07)
+- docs: update changelog for v1.0.3 (744db57)
+- docs: update changelog for v1.0.3 (d27381d)
+- docs: update changelog for v1.0.3 (07f7376)
+- docs: update changelog for v1.0.3 (fcce6f9)
+- docs: update changelog for v1.0.3 (58bac34)
+- docs: update changelog for v1.0.3 (dd808e5)
+- docs: update changelog for v1.0.3 (872354d)
+- docs: update changelog for v1.0.3 (5b062d3)
+- docs: update changelog for v1.0.3 (bb6f2b7)
 
 ## [1.0.3] - 2025-05-24
 
