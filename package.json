@@ -1,5 +1,5 @@
 {
-  "name": "chessboard",
+  "name": "@chess-labs/core",
   "version": "1.0.0",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
   "main": "dist/cjs/index.js",
