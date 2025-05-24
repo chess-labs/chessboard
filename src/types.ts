@@ -77,4 +77,14 @@ export interface GameState {
   isCheck: boolean;
   isCheckmate: boolean;
   isStalemate: boolean;
+  // FEN-specific fields
+  castlingRights?: {
+    whiteKingside: boolean;
+    whiteQueenside: boolean;
+    blackKingside: boolean;
+    blackQueenside: boolean;
+  };
+  enPassantTarget?: string; // Algebraic notation (e.g., "e3") or null
+  halfmoveClock?: number; // Moves since last capture or pawn move
+  fullmoveNumber?: number; // Incremented after Black's move
 }

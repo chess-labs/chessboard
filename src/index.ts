@@ -49,3 +49,16 @@ export {
 
 // Helper utilities
 export { arePositionsEqual } from './helper';
+
+// FEN utilities
+export {
+  pieceToFenChar,
+  fenCharToPiece,
+  boardToFenPieces,
+  fenPiecesToBoard,
+  gameStateToFen,
+  fenToGameState,
+  getCastlingRights,
+  getEnPassantTarget,
+  STARTING_FEN,
+} from './fen';
