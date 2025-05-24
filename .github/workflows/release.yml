@@ -185,11 +185,14 @@ EOF
         with:
           tag_name: v${{ steps.current-version.outputs.version }}
           release_name: Release v${{ steps.current-version.outputs.version }}
-          body: |
+          body: >
             🚀 **Release v${{ steps.current-version.outputs.version }}**
 
+
             ## What's Changed
+
             Check the [CHANGELOG.md](https://github.com/chess-labs/core/blob/main/CHANGELOG.md) for detailed changes.
+
 
             **Full Changelog**: https://github.com/chess-labs/core/compare/v${{ steps.current-version.outputs.version }}...HEAD
           draft: false
