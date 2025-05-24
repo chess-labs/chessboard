@@ -3,15 +3,17 @@ name: Auto Changelog
 on:
   push:
     branches: [main]
-    tags:
-      - 'v*'
-  release:
-    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag version (optional)'
+        required: false
+        type: string
 
 jobs:
   auto-changelog:
     runs-on: ubuntu-latest
-    # Skip if commit is from github-actions bot to prevent infinite loop
+    # Skip if commit is from github-actions bot or contains [skip ci]
     if: "!contains(github.event.head_commit.message, '[skip ci]') && github.actor != 'github-actions[bot]'"
 
     permissions:
@@ -23,8 +25,8 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GA_TOKEN }}
-          # For tag events, checkout main branch instead of detached HEAD
-          ref: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && 'main' || github.ref }}
+          # Always checkout main branch for consistency
+          ref: main
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -41,10 +43,11 @@ jobs:
         run: npm install -g auto-changelog
 
       - name: Update package.json version from tag
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.event.inputs.tag != ''
         run: |
-          # Extract version from tag (remove 'v' prefix)
-          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          # Extract version from input tag (remove 'v' prefix if present)
+          TAG_VERSION="${{ github.event.inputs.tag }}"
+          TAG_VERSION=${TAG_VERSION#v}
           echo "Updating package.json version to $TAG_VERSION"
 
           # Update package.json version using node
