@@ -18,6 +18,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - docs: update changelog for v1.0.3 (9fe8ec0)
 - docs: update changelog for v1.0.3 (841aaff)
 - docs: update changelog for v1.0.3 (86889ff)
+- docs: update changelog for v1.0.3 (163d314)
+
+## [1.0.3] - 2025-05-24
+
+### Changes
+- docs: update changelog for v1.0.3 (ea19970)
+- docs: update changelog for v1.0.3 (cae5753)
+- docs: update changelog for v1.0.3 (51230c7)
+- docs: update changelog for v1.0.3 (6e6e1a2)
+- docs: update changelog for v1.0.3 (75c4208)
+- docs: update changelog for v1.0.3 (9fe8ec0)
+- docs: update changelog for v1.0.3 (841aaff)
+- docs: update changelog for v1.0.3 (86889ff)
 
 ## [1.0.3] - 2025-05-24
 
