@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changes
 - docs: update changelog for v1.0.3 (ea19970)
 - docs: update changelog for v1.0.3 (cae5753)
+- docs: update changelog for v1.0.3 (51230c7)
+
+## [1.0.3] - 2025-05-24
+
+### Changes
+- docs: update changelog for v1.0.3 (ea19970)
+- docs: update changelog for v1.0.3 (cae5753)
 
 ## [1.0.3] - 2025-05-24
 
