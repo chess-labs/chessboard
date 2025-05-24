@@ -23,6 +23,8 @@ jobs:
         with:
           fetch-depth: 0
           token: ${{ secrets.GA_TOKEN }}
+          # For tag events, checkout main branch instead of detached HEAD
+          ref: ${{ github.event_name == 'push' && startsWith(github.ref, 'refs/tags/') && 'main' || github.ref }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -84,6 +86,19 @@ jobs:
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
 
+          # Ensure we're on a branch before committing
+          CURRENT_BRANCH=$(git branch --show-current)
+          if [ -z "$CURRENT_BRANCH" ]; then
+            echo "Currently in detached HEAD state, checking out main branch"
+            git checkout -B main
+          fi
+
           git add .
           git commit -m "docs: auto-update changelog and version [skip ci]"
-          git push
+
+          # Push to the current branch or main if in detached HEAD
+          if [ -n "$CURRENT_BRANCH" ]; then
+            git push origin "$CURRENT_BRANCH"
+          else
+            git push origin main
+          fi
