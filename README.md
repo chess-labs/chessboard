@@ -4,12 +4,14 @@ A minimal, standalone chess logic implementation in TypeScript.
 
 ## Features
 
-- Type-safe piece and board representations
-- Pure logic with no UI or DOM dependencies
-- Legal move calculation for all pieces
-- Easily portable into any frontend or backend project
-- Unit test friendly architecture
-- Foundation for check, checkmate, castling, en passant, and promotion logic
+- 🎯 **Type-safe piece and board representations**
+- 🔧 **Pure logic with no UI or DOM dependencies**
+- ♟️ **Complete legal move calculation for all pieces**
+- 🏰 **Full special rules support** (castling, en passant, promotion)
+- ✅ **Check, checkmate, and stalemate detection**
+- 📝 **FEN notation support** (import/export game states)
+- 🔄 **Easily portable** into any frontend or backend project
+- 🧪 **Unit test friendly architecture** with comprehensive test coverage
 
 ## Installation
 
@@ -22,12 +24,29 @@ npm install @chess-labs/core
 ## Usage Example
 
 ```typescript
-import { initBoard, getLegalMoves, movePiece } from '@chess-labs/core';
+import { initGameState, getLegalMoves, movePiece, gameStateToFen, fenToGameState } from '@chess-labs/core';
 
-const board = initBoard();
-const moves = getLegalMoves({ row: 6, col: 1 }, board); // Example: White pawn at b2
+// Initialize a new game
+const gameState = initGameState();
 
-const newBoard = movePiece({ row: 6, col: 1 }, { row: 4, col: 1 }, board); // Move pawn to b4
+// Get legal moves for a piece
+const moves = getLegalMoves({ row: 6, col: 4 }, gameState); // White pawn at e2
+
+// Make a move
+const newGameState = movePiece(
+  { row: 6, col: 4 }, // from e2
+  { row: 4, col: 4 }, // to e4
+  gameState
+);
+
+// Convert to FEN notation
+if (newGameState) {
+  const fen = gameStateToFen(newGameState);
+  console.log(fen); // "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1"
+
+  // Load from FEN
+  const loadedGame = fenToGameState(fen);
+}
 ```
 
 ## Architecture
@@ -46,11 +65,12 @@ src/
 
 ## Roadmap
 
-- Basic movement rules
-- Special rules (castling, en passant, promotion)
-- Check & checkmate detection
-- FEN/PGN support
-- AI opponent (Stockfish)
+- ✅ Basic movement rules
+- ✅ Special rules (castling, en passant, promotion)
+- ✅ Check & checkmate detection
+- ✅ FEN support (NEW!)
+- PGN support
+- AI opponent integration examples
 
 ## Testing
 
