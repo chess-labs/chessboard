@@ -110,6 +110,18 @@ describe('FEN Utilities', () => {
     it('should throw error for invalid FEN', () => {
       expect(() => fenPiecesToBoard('invalid')).toThrow('Invalid FEN: must have 8 rows');
     });
+
+    it('should throw error for invalid characters', () => {
+      expect(() => fenPiecesToBoard('rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNx')).toThrow(
+        "Invalid FEN: unrecognized character 'x' in row 8"
+      );
+    });
+
+    it('should throw error for invalid characters in middle rows', () => {
+      expect(() => fenPiecesToBoard('rnbqkbnr/pppppppp/8/4z3/8/8/PPPPPPPP/RNBQKBNR')).toThrow(
+        "Invalid FEN: unrecognized character 'z' in row 4"
+      );
+    });
   });
 
   describe('getCastlingRights', () => {

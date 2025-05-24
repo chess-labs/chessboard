@@ -120,7 +120,10 @@ export const fenPiecesToBoard = (fenPieces: string): Board => {
       } else {
         // Piece
         const piece = fenCharToPiece(char);
-        if (piece && col < 8) {
+        if (!piece) {
+          throw new Error(`Invalid FEN: unrecognized character '${char}' in row ${row + 1}`);
+        }
+        if (col < 8) {
           board[row][col] = piece;
         }
         col++;
