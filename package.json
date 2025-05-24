@@ -1,15 +1,13 @@
 {
   "name": "@chess-labs/core",
-  "version": "1.0.20",
+  "version": "1.0.21",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
-  "types": "dist/types/index.d.ts",
+  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js"
+      "require": "./dist/cjs/index.cjs"
     }
   },
   "files": [
