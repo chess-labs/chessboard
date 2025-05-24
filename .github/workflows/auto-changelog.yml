@@ -147,8 +147,7 @@ jobs:
             --commit-limit false \
             --unreleased \
             --sort-commits date \
-            --ignore-commit-pattern "^(build|chore|ci|docs|style|refactor|perf|test)(\(.+\))?: |docs: auto-update|\\[skip ci\\]" \
-            --ignore-commit-author "github-actions[bot]" \
+            --ignore-commit-pattern "docs: auto-update|\\[skip ci\\]" \
             --commit-url "https://github.com/chess-labs/chessboard/commit/{id}" \
             --compare-url "https://github.com/chess-labs/chessboard/compare/{from}...{to}" \
             --issue-url "https://github.com/chess-labs/chessboard/issues/{id}"
