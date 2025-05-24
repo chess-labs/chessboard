@@ -1,0 +1,82 @@
+name: Auto Changelog
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+jobs:
+  auto-changelog:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install auto-changelog
+        run: npm install -g auto-changelog
+
+      - name: Update package.json version from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          # Extract version from tag (remove 'v' prefix)
+          TAG_VERSION=${GITHUB_REF#refs/tags/v}
+          echo "Updating package.json version to $TAG_VERSION"
+
+          # Update package.json version using node
+          node -e "
+            const fs = require('fs');
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            pkg.version = '$TAG_VERSION';
+            fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+          "
+
+      - name: Generate CHANGELOG.md
+        run: |
+          # Generate changelog using auto-changelog
+          auto-changelog --template keepachangelog \
+            --commit-limit false \
+            --unreleased \
+            --sort-commits date \
+            --ignore-commit-pattern "^(build|chore|ci|docs|style|refactor|perf|test)(\(.+\))?: " \
+            --commit-url "https://github.com/chess-labs/chessboard/commit/{id}" \
+            --compare-url "https://github.com/chess-labs/chessboard/compare/{from}...{to}" \
+            --issue-url "https://github.com/chess-labs/chessboard/issues/{id}"
+
+      - name: Check for changes
+        id: check-changes
+        run: |
+          if git diff --quiet; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected"
+            echo "Git diff:"
+            git diff
+          fi
+
+      - name: Commit and push changes
+        if: steps.check-changes.outputs.changed == 'true'
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+          git add .
+          git commit -m "docs: auto-update changelog and version"
+          git push
