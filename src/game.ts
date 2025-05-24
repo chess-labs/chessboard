@@ -1,5 +1,5 @@
 import type { Board, GameState, Move, Piece, Position, SpecialMove } from './types';
-import { Color, PieceType } from './const';
+import { Color, PieceType } from './types';
 import {
   clearBoard,
   clearPosition,

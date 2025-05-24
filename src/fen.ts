@@ -1,5 +1,5 @@
 import type { Board, GameState, Piece, Position } from './types';
-import { Color, PieceType } from './const';
+import { Color, PieceType } from './types';
 import { initBoard, placePiece } from './board';
 
 // Module-level mapping objects to avoid repeated allocations
