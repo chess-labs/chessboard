@@ -11,12 +11,12 @@ A minimal, standalone chess logic implementation in TypeScript.
 - Unit test friendly architecture
 - Foundation for check, checkmate, castling, en passant, and promotion logic
 
-## Installation (Coming Soon)
+## Installation
 
 Once published to npm:
 
 ```bash
-npm install ...
+npm install @chess-labs/core
 ```
 
 ## Usage Example

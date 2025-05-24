@@ -86,7 +86,7 @@ export const getLegalMoves = (position: Position, gameState: GameState): Move[] 
       break;
 
     default:
-      console.error(`Unknown piece type: ${piece.type}`);
+      // Unknown piece type - return empty array
       return [];
   }
 
