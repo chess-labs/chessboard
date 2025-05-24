@@ -8,7 +8,7 @@ import {
   positionToAlgebraic,
   cloneBoard,
 } from './board';
-import { Color, PieceType } from './types';
+import { Color, PieceType } from './const';
 
 describe('Board functions', () => {
   describe('initBoard', () => {
