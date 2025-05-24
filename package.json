@@ -1,6 +1,6 @@
 {
   "name": "@chess-labs/core",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
