@@ -130,6 +130,11 @@ export const fenPiecesToBoard = (fenPieces: string): Board => {
         col++;
       }
     }
+
+    // Validate that exactly 8 squares have been populated
+    if (col !== 8) {
+      throw new Error(`Invalid FEN: row ${row + 1} has ${col} squares instead of 8`);
+    }
   }
 
   return board;
