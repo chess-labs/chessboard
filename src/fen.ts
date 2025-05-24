@@ -2,22 +2,32 @@ import type { Board, GameState, Piece, Position } from './types';
 import { Color, PieceType } from './types';
 import { initBoard, placePiece } from './board';
 
+// Module-level mapping objects to avoid repeated allocations
+const PIECE_TO_CHAR_MAP: Record<PieceType, string> = {
+  [PieceType.PAWN]: 'p',
+  [PieceType.ROOK]: 'r',
+  [PieceType.KNIGHT]: 'n',
+  [PieceType.BISHOP]: 'b',
+  [PieceType.QUEEN]: 'q',
+  [PieceType.KING]: 'k',
+};
+
+const CHAR_TO_PIECE_TYPE_MAP: Record<string, PieceType> = {
+  p: PieceType.PAWN,
+  r: PieceType.ROOK,
+  n: PieceType.KNIGHT,
+  b: PieceType.BISHOP,
+  q: PieceType.QUEEN,
+  k: PieceType.KING,
+};
+
 /**
  * Converts a chess piece to its FEN character representation
  * @param piece - The chess piece to convert
  * @returns Single character representing the piece in FEN notation
  */
 export const pieceToFenChar = (piece: Piece): string => {
-  const charMap: Record<PieceType, string> = {
-    [PieceType.PAWN]: 'p',
-    [PieceType.ROOK]: 'r',
-    [PieceType.KNIGHT]: 'n',
-    [PieceType.BISHOP]: 'b',
-    [PieceType.QUEEN]: 'q',
-    [PieceType.KING]: 'k',
-  };
-
-  const char = charMap[piece.type];
+  const char = PIECE_TO_CHAR_MAP[piece.type];
   return piece.color === Color.WHITE ? char.toUpperCase() : char;
 };
 
@@ -32,16 +42,7 @@ export const fenCharToPiece = (fenChar: string): Piece | null => {
   const color = fenChar === fenChar.toUpperCase() ? Color.WHITE : Color.BLACK;
   const lowerChar = fenChar.toLowerCase();
 
-  const typeMap: Record<string, PieceType> = {
-    p: PieceType.PAWN,
-    r: PieceType.ROOK,
-    n: PieceType.KNIGHT,
-    b: PieceType.BISHOP,
-    q: PieceType.QUEEN,
-    k: PieceType.KING,
-  };
-
-  const type = typeMap[lowerChar];
+  const type = CHAR_TO_PIECE_TYPE_MAP[lowerChar];
   if (!type) return null;
 
   return { type, color };
@@ -142,7 +143,16 @@ export const fenPiecesToBoard = (fenPieces: string): Board => {
 export const getCastlingRights = (gameState: GameState): string => {
   let rights = '';
 
-  // Check if kings and rooks have moved
+  // Use explicit castling rights if available
+  if (gameState.castlingRights) {
+    if (gameState.castlingRights.whiteKingside) rights += 'K';
+    if (gameState.castlingRights.whiteQueenside) rights += 'Q';
+    if (gameState.castlingRights.blackKingside) rights += 'k';
+    if (gameState.castlingRights.blackQueenside) rights += 'q';
+    return rights || '-';
+  }
+
+  // Fallback: check if kings and rooks have moved (legacy behavior)
   const whiteKing = gameState.board[7][4];
   const blackKing = gameState.board[0][4];
   const whiteKingsideRook = gameState.board[7][7];
@@ -174,11 +184,17 @@ export const getCastlingRights = (gameState: GameState): string => {
 };
 
 /**
- * Gets en passant target square from move history
+ * Gets en passant target square from game state
  * @param gameState - Current game state
  * @returns En passant target square or '-' if none
  */
 export const getEnPassantTarget = (gameState: GameState): string => {
+  // Use explicit en passant target if available
+  if (gameState.enPassantTarget !== undefined) {
+    return gameState.enPassantTarget || '-';
+  }
+
+  // Fallback: calculate from move history (legacy behavior)
   if (gameState.moveHistory.length === 0) return '-';
 
   const lastMove = gameState.moveHistory[gameState.moveHistory.length - 1];
@@ -200,6 +216,43 @@ export const getEnPassantTarget = (gameState: GameState): string => {
 };
 
 /**
+ * Calculates halfmove clock from move history
+ * @param moveHistory - Array of moves
+ * @returns Number of halfmoves since last capture or pawn move
+ */
+export const calculateHalfmoveClock = (moveHistory: GameState['moveHistory']): number => {
+  let halfmoves = 0;
+
+  // Count backwards from the last move until we find a capture or pawn move
+  for (let i = moveHistory.length - 1; i >= 0; i--) {
+    const move = moveHistory[i];
+
+    // Reset counter if it's a pawn move or capture
+    if (move.piece.type === PieceType.PAWN || move.captured) {
+      break;
+    }
+
+    halfmoves++;
+  }
+
+  return halfmoves;
+};
+
+/**
+ * Parses castling rights from FEN string
+ * @param castlingStr - Castling rights string from FEN
+ * @returns Castling rights object
+ */
+export const parseCastlingRights = (castlingStr: string) => {
+  return {
+    whiteKingside: castlingStr.includes('K'),
+    whiteQueenside: castlingStr.includes('Q'),
+    blackKingside: castlingStr.includes('k'),
+    blackQueenside: castlingStr.includes('q'),
+  };
+};
+
+/**
  * Converts a complete game state to FEN notation
  * @param gameState - Current game state
  * @returns Complete FEN string
@@ -210,11 +263,17 @@ export const gameStateToFen = (gameState: GameState): string => {
   const castlingRights = getCastlingRights(gameState);
   const enPassantTarget = getEnPassantTarget(gameState);
 
-  // Halfmove clock (moves since last capture or pawn move) - simplified to 0
-  const halfmoveClock = '0';
+  // Use explicit halfmove clock if available, otherwise calculate from move history
+  const halfmoveClock =
+    gameState.halfmoveClock !== undefined
+      ? gameState.halfmoveClock.toString()
+      : calculateHalfmoveClock(gameState.moveHistory).toString();
 
-  // Fullmove number (incremented after Black's move)
-  const fullmoveNumber = Math.floor(gameState.moveHistory.length / 2) + 1;
+  // Use explicit fullmove number if available, otherwise calculate from move history
+  const fullmoveNumber =
+    gameState.fullmoveNumber !== undefined
+      ? gameState.fullmoveNumber.toString()
+      : (Math.floor(gameState.moveHistory.length / 2) + 1).toString();
 
   return `${pieces} ${activeColor} ${castlingRights} ${enPassantTarget} ${halfmoveClock} ${fullmoveNumber}`;
 };
@@ -239,14 +298,28 @@ export const fenToGameState = (fen: string): GameState => {
   // Determine current turn
   const currentTurn = activeColor === 'w' ? Color.WHITE : Color.BLACK;
 
-  // Create basic game state (move history and special flags would need more complex parsing)
+  // Parse castling rights
+  const castling = parseCastlingRights(castlingRights);
+
+  // Parse en passant target (null if '-')
+  const enPassant = enPassantTarget === '-' ? undefined : enPassantTarget;
+
+  // Parse halfmove clock and fullmove number
+  const halfmove = Number.parseInt(halfmoveClock) || 0;
+  const fullmove = Number.parseInt(fullmoveNumber) || 1;
+
+  // Create game state with parsed FEN information
   const gameState: GameState = {
     board,
     currentTurn,
-    moveHistory: [], // Would need complex parsing to reconstruct
-    isCheck: false, // Would need to calculate
-    isCheckmate: false, // Would need to calculate
-    isStalemate: false, // Would need to calculate
+    moveHistory: [], // Cannot reconstruct move history from FEN alone
+    isCheck: false, // Would need to calculate based on board position
+    isCheckmate: false, // Would need to calculate based on available moves
+    isStalemate: false, // Would need to calculate based on available moves
+    castlingRights: castling,
+    enPassantTarget: enPassant,
+    halfmoveClock: halfmove,
+    fullmoveNumber: fullmove,
   };
 
   return gameState;
