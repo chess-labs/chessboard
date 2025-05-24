@@ -8,8 +8,10 @@
   "issueUrl": "https://github.com/chess-labs/core/issues/{id}",
   "commitUrl": "https://github.com/chess-labs/core/commit/{id}",
   "compareUrl": "https://github.com/chess-labs/core/compare/{from}...{to}",
-  "ignoreCommitPattern": "^(build|chore|ci|docs|style|refactor|perf|test)(\\(.+\\))?: ",
+  "ignoreCommitPattern": "^(docs.*auto-update changelog|chore.*bump version)",
   "sortCommits": "date",
+  "hideCredit": false,
+  "includeBranch": ["main"],
   "replaceText": {
     "feat": "### Added",
     "fix": "### Fixed",
@@ -19,6 +21,7 @@
     "refactor": "### Refactoring",
     "test": "### Testing",
     "build": "### Build",
-    "ci": "### CI"
+    "ci": "### CI",
+    "chore": "### Chore"
   }
 }
