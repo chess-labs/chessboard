@@ -2,27 +2,57 @@
   "name": "chessboard",
   "version": "1.0.0",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
-  "main": "dist/index.js",
-  "types": "dist/types.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/types/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "types": "./dist/types/index.d.ts"
+    }
+  },
   "files": [
     "dist"
   ],
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:clean && npm run build:esm && npm run build:cjs && npm run build:types",
+    "build:clean": "rm -rf dist",
+    "build:esm": "tsc -p tsconfig.esm.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "build:types": "tsc -p tsconfig.types.json",
     "type-check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "prepublishOnly": "npm run test && npm run build"
   },
   "keywords": [
     "chess",
     "typescript",
     "engine",
-    "board-game"
+    "board-game",
+    "chess-engine",
+    "game",
+    "logic",
+    "framework-agnostic",
+    "esm",
+    "commonjs"
   ],
   "author": "chess-labs",
   "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/chess-labs/chessboard.git"
+  },
+  "bugs": {
+    "url": "https://github.com/chess-labs/chessboard/issues"
+  },
+  "homepage": "https://github.com/chess-labs/chessboard#readme",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "packageManager": "pnpm@10.8.1",
   "devDependencies": {
     "@types/node": "^22.15.19",
