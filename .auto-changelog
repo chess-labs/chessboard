@@ -5,9 +5,9 @@
   "commitLimit": false,
   "backfillLimit": false,
   "handlebarsSetup": "",
-  "issueUrl": "https://github.com/chess-labs/chessboard/issues/{id}",
-  "commitUrl": "https://github.com/chess-labs/chessboard/commit/{id}",
-  "compareUrl": "https://github.com/chess-labs/chessboard/compare/{from}...{to}",
+  "issueUrl": "https://github.com/chess-labs/core/issues/{id}",
+  "commitUrl": "https://github.com/chess-labs/core/commit/{id}",
+  "compareUrl": "https://github.com/chess-labs/core/compare/{from}...{to}",
   "ignoreCommitPattern": "^(build|chore|ci|docs|style|refactor|perf|test)(\\(.+\\))?: ",
   "sortCommits": "date",
   "replaceText": {
