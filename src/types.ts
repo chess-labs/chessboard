@@ -1,7 +1,7 @@
 /**
  * Enumeration defining chess piece types
  */
-export const enum PieceType {
+export enum PieceType {
   PAWN = 'pawn',
   ROOK = 'rook',
   KNIGHT = 'knight',
@@ -13,7 +13,7 @@ export const enum PieceType {
 /**
  * Enumeration defining chess piece colors
  */
-export const enum Color {
+export enum Color {
   WHITE = 'white',
   BLACK = 'black',
 }
