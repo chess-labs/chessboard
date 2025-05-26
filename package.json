@@ -1,6 +1,6 @@
 {
   "name": "@chess-labs/core",
-  "version": "1.0.22",
+  "version": "1.0.23",
   "description": "A lightweight, framework-agnostic chess engine written entirely in TypeScript",
   "type": "module",
   "exports": {
