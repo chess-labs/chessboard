@@ -43,12 +43,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/chess-labs/chessboard.git"
+    "url": "git+https://github.com/chess-labs/core.git"
   },
   "bugs": {
-    "url": "https://github.com/chess-labs/chessboard/issues"
+    "url": "https://github.com/chess-labs/core/issues"
   },
-  "homepage": "https://github.com/chess-labs/chessboard#readme",
+  "homepage": "https://github.com/chess-labs/core#readme",
   "engines": {
     "node": ">=16.0.0"
   },
